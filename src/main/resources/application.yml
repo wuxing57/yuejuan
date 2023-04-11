@@ -1,0 +1,90 @@
+server:
+  port: 9095
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://43.142.244.146:3306/yjxt?serverTimezone=GMT%2b8
+    username: root
+    password: ndq1499
+    hikari:
+      connection-init-sql: select 1
+      max-lifetime: 60000
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  # redis配置
+  redis:
+    # Redis数据库索引（默认为0）
+    database: 0
+    # Redis服务器地址
+    host: 43.142.244.146
+    # Redis服务器连接端口
+    port: 6379
+    # Redis服务器连接密码（默认为空）
+    password: 123456
+    # 连接超时时间
+    timeout: 10s
+    lettuce:
+      pool:
+        # 连接池最大连接数
+        max-active: 200
+        # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-wait: -1ms
+        # 连接池中的最大空闲连接
+        max-idle: 10
+        # 连接池中的最小空闲连接
+        min-idle: 0
+#  kafka:
+#    # kafka服务地址
+#    bootstrap-servers: 43.142.244.146:9092
+#    producer:
+#      # 生产者消息key序列化方式
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      # 生产者消息value序列化方式
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+#    consumer:
+#      # 消费者组
+#      group-id: test-consumer-group
+#      # 消费者消息value反序列化方式
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      # 消费者消息value反序列化方式
+#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+mybatis:
+  mapper-locations: classpath:mapper/*.xml  #扫描所有mybatis的xml文件
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+files:
+  upload:
+    path: D:/files/
+
+knife4j:
+  enable: true
+  openapi:
+    title: 在线考试系统api文档
+    description: "在线考试系统api文档"
+    email: 2772405587@qq.com
+    concat: ndq
+    url:
+    version: v4.0
+    license: Apache 2.0
+    license-url: https://stackoverflow.com/
+    terms-of-service-url: https://stackoverflow.com/
+    group:
+      test1:
+        group-name: 考试系统接口
+        api-rule: package
+        api-rule-resources:
+          - com.example.springboot.controller
+
+#doublecache:
+#  allowNull: true
+#  init: 128
+#  max: 1024
+#  expireAfterWrite: 300  #Caffeine过期时间
+#  redisExpire: 600      #Redis缓存过期时间
+
+
