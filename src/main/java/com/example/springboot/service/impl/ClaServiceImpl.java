@@ -17,4 +17,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ClaServiceImpl extends ServiceImpl<ClaMapper, Cla> implements IClaService {
 
+    @Override
+    public Integer getClassByKey(String key) {
+        return baseMapper.getClassByKey(key);
+    }
 }

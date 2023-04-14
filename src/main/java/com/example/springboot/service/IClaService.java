@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IClaService extends IService<Cla> {
 
+    Integer getClassByKey(String key);
 }

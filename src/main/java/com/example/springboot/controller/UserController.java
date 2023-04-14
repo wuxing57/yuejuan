@@ -152,7 +152,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-
     @ApiOperation("根据id查询用户")
     public Result findOne(@PathVariable Integer id) {
         return Result.success(userService.getById(id));

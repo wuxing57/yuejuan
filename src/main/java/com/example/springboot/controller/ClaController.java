@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletOutputStream;
 import java.net.URLEncoder;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.springboot.exception.ServiceException;
+import com.example.springboot.service.IUserService;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.io.InputStream;
@@ -40,8 +42,22 @@ public class ClaController {
     @Resource
     private IClaService claService;
 
+    @Resource
+    private IUserService userService;
     private final String now = DateUtil.now();
 
+    @PutMapping("/addClass/{key}/{id}")
+    public Result addClass(@PathVariable String key, @PathVariable Integer id){
+       Integer classId = claService.getClassByKey(key);
+       if (classId == null){
+           throw new ServiceException("600", "密钥错误，请重新输入");
+       }
+        User user = userService.getById(id);
+       if (user == null) throw new ServiceException("600","用户不存在");
+       user.setClassId(String.valueOf(classId));
+        boolean update = userService.updateById(user);
+        return update ? Result.success() : Result.error("600","加入班级错误");
+    }
     // 新增或者更新
     @PostMapping
     public Result save(@RequestBody Cla cla) {

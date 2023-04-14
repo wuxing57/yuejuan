@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface ClaMapper extends BaseMapper<Cla> {
 
+    Integer getClassByKey(String key);
 }

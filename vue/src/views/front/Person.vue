@@ -17,6 +17,9 @@
       <el-form-item label="昵称">
         <el-input v-model="form.nickname" autocomplete="off"></el-input>
       </el-form-item>
+        <el-form-item label="班级">
+            <el-input v-model="className" disabled autocomplete="off"></el-input>
+        </el-form-item>
       <el-form-item label="邮箱">
         <el-input v-model="form.email" autocomplete="off"></el-input>
       </el-form-item>
@@ -35,11 +38,14 @@
 
 <script>
 
+import request from "@/utils/request";
+
 export default {
   name: "Person",
   data() {
     return {
       form: {},
+      className:"",
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {}
     }
   },
@@ -47,6 +53,9 @@ export default {
     this.getUser().then(res => {
       console.log(res)
       this.form = res
+      request.get('/cla/'+this.form.classId).then(res=>{
+            this.className = res.data.name
+      })
     })
   },
   methods: {
