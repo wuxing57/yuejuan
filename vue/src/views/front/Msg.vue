@@ -1,20 +1,31 @@
 <template>
  <div>
    <el-card>
-      <div  v-for="item in msgList">
+       <div  v-for="item in msgList">
 <!--          <div>{{item.title}}</div>-->
 <!--          <div>{{item.readNum}}</div>-->
-        <el-collapse  @change="handleChange(item.id)">
+        <el-collapse  @change="handleChange(item.id)" accordion>
           <template>
                <el-tag style="margin-left: 900px; margin-top: 60px">{{item.readNum == 1 ? "已读":"未读"}}</el-tag>
           </template>
           <el-collapse-item :title=item.title name="1">
-            <div>发送人：{{item.send}}</div>
+            <div>发送人：{{item.sendUsername}}</div>
             <div>发生时间：{{item.createTime}}</div>
              <div>内容：{{item.content}}</div>
           </el-collapse-item>
         </el-collapse>
-      </div>
+          </div>
+       <div style="padding: 10px 0">
+           <el-pagination
+                   @size-change="handleSizeChange"
+                   @current-change="handleCurrentChange"
+                   :current-page="pageNum"
+                   :page-sizes="[2, 5, 10, 20]"
+                   :page-size="pageSize"
+                   layout="total, sizes, prev, pager, next, jumper"
+                   :total="total">
+           </el-pagination>
+       </div>
    </el-card>
  </div>
 </template>
@@ -27,6 +38,9 @@ export default {
     return {
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
       msgList:[],
+      pageNum: 1,
+      pageSize:10,
+      total:0
 
     }
   },
@@ -44,12 +58,27 @@ export default {
       })
     },
     load(){
-      request.get("/msg/user/"+this.user.id).then(res=>{
+      request.get("/msg/page",{
+          params:{
+              pageNum: this.pageNum,
+              pageSize: this.pageSize,
+              rec: this.user.id
+          }}).then(res=>{
         if (res.code ==='200'){
-          this.msgList = res.data
+            console.log(res.data.records)
+          this.msgList = res.data.records
+            this.total = res.data.total
         }
       })
     },
+      handleSizeChange(pageSize) {
+          this.pageSize = pageSize
+          this.load()
+      },
+      handleCurrentChange(pageNum) {
+          this.pageNum = pageNum
+          this.load()
+      },
   }
 }
 </script>

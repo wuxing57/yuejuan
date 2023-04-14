@@ -16,4 +16,6 @@ import java.util.List;
 public interface IQuestionService extends IService<Question> {
 
     List<Question> getQuestionByPaperId(Integer paperId);
+
+    Integer getQuestionCount(String startTime, String endTime);
 }

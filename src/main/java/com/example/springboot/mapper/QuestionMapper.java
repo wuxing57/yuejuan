@@ -18,4 +18,6 @@ import java.util.List;
 public interface QuestionMapper extends BaseMapper<Question> {
 
     List<Question> getQuestionByPaperId(Integer paperId);
+
+    Integer getQuestionCount(String startTime, String endTime);
 }

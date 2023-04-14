@@ -6,4 +6,5 @@ import lombok.Data;
 @Data
 public class StudentPaperPageVo extends StudentPaper {
     private String studentName;
+    private String claName;
 }

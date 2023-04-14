@@ -10,4 +10,9 @@
                 on q.id=pq.question_id
         WHERE pq.paper_id=#{paperId}
     </select>
+    <select id="getQuestionCount" resultType="java.lang.Integer">
+        select count(*)
+        from question
+        where time between #{startTime} and #{endTime}
+    </select>
 </mapper>

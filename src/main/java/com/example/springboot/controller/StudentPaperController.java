@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.swing.plaf.synth.SynthPainter;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,7 +53,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Api("学生试卷接口")
 @RequestMapping("/studentPaper")
 public class StudentPaperController {
-
     @Resource
     private IStudentPaperService studentPaperService;
     @Resource
@@ -65,6 +65,8 @@ public class StudentPaperController {
     private IPaperService paperService;
     @Resource
     private ICourseService courseService;
+    @Resource
+    private IClaService claService;
 
 
     private final String now = DateUtil.now();
@@ -160,13 +162,19 @@ public class StudentPaperController {
             BeanUtils.copyProperties(studentPaper, studentPaperPageVo);
             return studentPaperPageVo;
         });
+        //填充数据库的id为name
         if (studentPaperPageVoIPage != null){
             List<Integer> studentIds = studentPaperPageVoIPage.getRecords().stream()
                     .map(StudentPaper::getUserId).collect(Collectors.toList());
+            List<Integer> claIds = studentPaperPageVoIPage.getRecords().stream()
+                    .map(StudentPaper::getClaId).collect(Collectors.toList());
             List<User> userList = userService.listByIds(studentIds);
+            List<Cla> claList = claService.listByIds(claIds);
+            Map<Integer, String> claMap = claList.stream().collect(Collectors.toMap(Cla::getId, Cla::getName));
             Map<Integer, String> userMap = userList.stream().collect(Collectors.toMap(User::getId, User::getUsername));
             studentPaperPageVoIPage.convert(studentPaperPageVo -> {
                 studentPaperPageVo.setStudentName(userMap.get(studentPaperPageVo.getUserId()));
+                studentPaperPageVo.setClaName(claMap.get(studentPaperPageVo.getClaId()));
                 return studentPaperPageVo;
             });
         }

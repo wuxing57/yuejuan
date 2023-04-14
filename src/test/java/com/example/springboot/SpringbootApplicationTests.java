@@ -9,6 +9,7 @@ import com.example.springboot.entity.Exam;
 import com.example.springboot.entity.StudentPaper;
 import com.example.springboot.entity.User;
 import com.example.springboot.service.IExamService;
+import com.example.springboot.service.IQuestionService;
 import com.example.springboot.service.IStudentPaperService;
 import com.example.springboot.service.IUserService;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -45,9 +46,21 @@ class SpringbootApplicationTests {
     private IExamService examService;
     @Autowired
     private IUserService userService;
+    @Autowired
+    private IQuestionService questionService;
 
     @Test
-    public void daochu() throws IOException {
-        HashMap<Object, Object> objectObjectHashMap = new HashMap<>();
+    public void daochu() {
+//        String startTime = "2022" +"-"+"12"+"-"+"14"+" 00:00";
+//        String endTime = "2022" +"-"+"12"+"-"+"14"+" 23:59";
+//        Integer count = questionService.getQuestionCount(startTime, endTime);
+//        System.out.println(count);
+        Calendar instance = Calendar.getInstance();
+        int month = instance.get(Calendar.MONTH);
+        int year = instance.get(Calendar.YEAR);
+        int days = instance.getActualMaximum(Calendar.DAY_OF_MONTH);
+        System.out.println(month);
+        System.out.println(year);
+        System.out.println(days);
     }
 }

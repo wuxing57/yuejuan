@@ -27,4 +27,9 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
       List<Question> questions=  questionMapper.getQuestionByPaperId(paperId);
         return questions;
     }
+
+    @Override
+    public Integer getQuestionCount(String startTime, String endTime) {
+        return baseMapper.getQuestionCount(startTime, endTime);
+    }
 }

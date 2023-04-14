@@ -8,8 +8,8 @@
             <span>考试状态：{{item.state}}</span>&nbsp&nbsp
 
       <div>
-        <span><el-button @click="sign(item.id)">报名</el-button></span>&nbsp&nbsp
-        <span><el-button @click="attend(item.id)">参加考试</el-button></span>
+        <span><el-button @click="sign(item.id)" :disabled="notClick(item.time)">报名</el-button></span>&nbsp&nbsp
+        <span><el-button @click="attend(item.id)" :disabled="notClick(item.time)">参加考试</el-button></span>
       </div>
 
     </div>
@@ -89,7 +89,12 @@ export default {
           this.$message.error(res.msg)
         }
       })
-    }
+    },
+      notClick(time){
+        let time1 = new Date(time).getTime();
+        let time2 = new Date().getTime();
+        return time2 > time1
+      }
 
   }
 }

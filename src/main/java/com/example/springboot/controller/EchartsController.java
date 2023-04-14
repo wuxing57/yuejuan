@@ -8,9 +8,7 @@ import com.example.springboot.common.Result;
 import com.example.springboot.entity.Cla;
 import com.example.springboot.entity.StudentPaper;
 import com.example.springboot.entity.User;
-import com.example.springboot.service.IClaService;
-import com.example.springboot.service.IStudentPaperService;
-import com.example.springboot.service.IUserService;
+import com.example.springboot.service.*;
 import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +29,10 @@ public class EchartsController {
     private IStudentPaperService studentPaperService;
     @Autowired
     private IClaService claService;
+    @Autowired
+    private IPaperService paperService;
+    @Autowired
+    private IQuestionService questionService;
 
     @GetMapping("/grade/{examId}")
     public Result grade(@PathVariable Integer examId){
@@ -67,6 +69,41 @@ public class EchartsController {
          map.put("min",min);
          map.put("all",studentPaperList);
          return Result.success(map);
+    }
+
+    @GetMapping("/count")
+    public Result getCount(){
+        HashMap<String, Long> map = new HashMap<>();
+        Long cla = claService.count();
+        Long paper = paperService.count();
+        Long question = questionService.count();
+        Long user = userService.count();
+        map.put("班级总数", cla);
+        map.put("试卷总量", paper);
+        map.put("题库数量", question);
+        map.put("用户总数", user);
+        return Result.success(map);
+    }
+
+    @GetMapping("/line")
+    public Result getLine(){
+        Map<String, List<Integer>> map = new HashMap<>();
+        Calendar instance = Calendar.getInstance();
+        int month = instance.get(Calendar.MONTH)+1;
+        int year = instance.get(Calendar.YEAR);
+        int days = instance.getActualMaximum(Calendar.DAY_OF_MONTH);
+        ArrayList<Integer> day = new ArrayList<>();
+        ArrayList<Integer> countList = new ArrayList<>();
+        for (int i = 1; i <= days; i++) {
+             day.add(i);
+             String startTime = year +"-"+month+"-"+i+" 00:00";
+             String endTime = year +"-"+month+"-"+i+" 23:59";
+             Integer count = questionService.getQuestionCount(startTime, endTime);
+             countList.add(count);
+        }
+        map.put("x", day);
+        map.put("y", countList);
+        return Result.success(map);
     }
 
     @GetMapping("/example")
