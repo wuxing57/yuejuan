@@ -1,6 +1,7 @@
 package com.example.springboot.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONUtil;
@@ -11,25 +12,29 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletOutputStream;
 import java.net.URLEncoder;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.springboot.controller.vo.GradeExcel;
 import com.example.springboot.controller.vo.RecordVo;
 import com.example.springboot.controller.vo.StudentPaperPageVo;
 import com.example.springboot.controller.vo.WrongVo;
 import com.example.springboot.entity.*;
+import com.example.springboot.exception.ServiceException;
 import com.example.springboot.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.models.auth.In;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.swing.plaf.synth.SynthPainter;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -82,6 +87,10 @@ public class StudentPaperController {
         if (getStudentPaper!=null){
             return Result.error("-1","不能重复提交试卷");
         }
+        Integer userId = studentPaper.getUserId();
+        User user = userService.getById(userId);
+        if (user == null) throw new ServiceException("600", "用户不存在，无法提交试卷");
+        studentPaper.setClaId(Integer.valueOf(user.getClassId()));
         if (studentPaper.getId() == null) {
             studentPaper.setTime(DateUtil.now());
             studentPaper.setUserId(TokenUtils.getCurrentUser().getId());
@@ -123,20 +132,35 @@ public class StudentPaperController {
      * @return
      */
     @GetMapping("/user/{userId}")
-    public Result userId(@PathVariable Integer userId) {
-        List<StudentPaper> studentPaperList = studentPaperService.list(Wrappers.<StudentPaper>lambdaQuery().eq(StudentPaper::getUserId, userId));
-        List<RecordVo> recordVoList = BeanUtil.copyToList(studentPaperList, RecordVo.class);
-        recordVoList.stream()
-                .forEach(recordVo -> {
-                    Integer examId = recordVo.getExamId();
-                    Exam exam = examService.getById(examId);
+    public Result userId(@PathVariable Integer userId,
+                         @RequestParam Integer pageNum,
+                         @RequestParam Integer pageSize,
+                         @RequestParam(required = false) Integer courseId
+                          ) {
+        Page<StudentPaper> studentPaperPage = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<StudentPaper> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(StudentPaper::getUserId, userId);
+        //查询该课程下所有的考试id
+        List<Exam> examList = examService.list(new LambdaQueryWrapper<Exam>()
+                .eq(courseId != null, Exam::getCourseId, courseId));
+        List<Integer> examIds = examList.stream().map(Exam::getId).collect(Collectors.toList());
+
+        wrapper.in(CollUtil.isNotEmpty(examIds), StudentPaper::getExamId, examIds);
+        Page<StudentPaper> page = studentPaperService.page(studentPaperPage, wrapper);
+        List<RecordVo> recordVoList = BeanUtil.copyToList(page.getRecords(), RecordVo.class);
+        recordVoList.forEach(recordVo -> {
+                    Integer getExamId = recordVo.getExamId();
+                    Exam exam = examService.getById(getExamId);
                     String examName = exam.getName();
-                    Integer courseId = exam.getCourseId();
-                    String courseName = courseService.getById(courseId).getName();
+                    Integer getCourseId = exam.getCourseId();
+                    String courseName = courseService.getById(getCourseId).getName();
                     recordVo.setExamName(examName);
                     recordVo.setCourseName(courseName);
                 });
-        return Result.success(recordVoList);
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("data", recordVoList);
+        result.put("total", page.getTotal());
+        return Result.success(result);
     }
 
     @GetMapping("/page")
@@ -184,15 +208,41 @@ public class StudentPaperController {
     /**
     * 导出接口
     */
-    @GetMapping("/export")
-    public void export(HttpServletResponse response) throws Exception {
+    @GetMapping("/export/{exmaId}")
+    public void export(HttpServletResponse response , @PathVariable Integer exmaId) throws Exception {
         // 从数据库查询出所有的数据
-        List<StudentPaper> list = studentPaperService.list();
+        List<StudentPaper> list = studentPaperService
+                .list(new LambdaQueryWrapper<StudentPaper>()
+                        .eq(exmaId != null, StudentPaper::getExamId,
+                                exmaId));
+        List<Integer> userIds = list.stream().map(StudentPaper::getUserId).collect(Collectors.toList());
+        List<Integer> claIds = list.stream().map(StudentPaper::getClaId).collect(Collectors.toList());
+        List<Integer> examIds = list.stream().map(StudentPaper::getExamId).collect(Collectors.toList());
+
+        Map<Integer, String> userMap = userService.listByIds(userIds).stream().collect(Collectors.toMap(User::getId, User::getUsername));
+        Map<Integer, String> examMap = examService.listByIds(examIds).stream().collect(Collectors.toMap(Exam::getId, Exam::getName));
+        Map<Integer, String> claMap = claService.listByIds(claIds).stream().collect(Collectors.toMap(Cla::getId, Cla::getName));
+        log.info("clamap:"+claMap);
+        ArrayList<GradeExcel> excelArrayList = new ArrayList<>();
+        for (StudentPaper studentPaper : list) {
+            GradeExcel gradeExcel = new GradeExcel();
+            gradeExcel.setScore(studentPaper.getScore());
+            gradeExcel.setClassName(claMap.get(studentPaper.getClaId()));
+            gradeExcel.setUserName(userMap.get(studentPaper.getUserId()));
+            gradeExcel.setExamName(examMap.get(studentPaper.getExamId()));
+            excelArrayList.add(gradeExcel);
+        }
+        log.info(String.valueOf(excelArrayList));
         // 在内存操作，写出到浏览器
         ExcelWriter writer = ExcelUtil.getWriter(true);
-
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("userName", "姓名");
+        map.put("className", "班级");
+        map.put("examName", "考试名称");
+        map.put("score", "分数");
+        writer.setHeaderAlias(map);
         // 一次性写出list内的对象到excel，使用默认样式，强制输出标题
-        writer.write(list, true);
+        writer.write(excelArrayList, true);
 
         // 设置浏览器响应的格式
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");

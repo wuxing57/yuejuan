@@ -1,39 +1,61 @@
 <template>
-  <el-card style="width: 500px;">
-    <el-form label-width="80px" size="small">
-      <el-upload
-          class="avatar-uploader"
-          :action="'http://localhost:9090/file/upload'"
-          :show-file-list="false"
-          :on-success="handleAvatarSuccess"
-      >
-        <img v-if="form.avatarUrl" :src="form.avatarUrl" class="avatar">
-        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-      </el-upload>
+    <div>
+        <div>
+            <div  v-show="form.className === ''" >
+                <el-button @click="addClass()">还没有加入班级？点击加入</el-button>
+            </div>
+        </div>
+        <el-card style="width: 500px;">
+            <el-form label-width="80px" size="small">
+                <el-upload
+                        class="avatar-uploader"
+                        :action="'http://localhost:9090/file/upload'"
+                        :show-file-list="false"
+                        :on-success="handleAvatarSuccess"
+                >
+                    <img v-if="form.avatarUrl" :src="form.avatarUrl" class="avatar">
+                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                </el-upload>
 
-      <el-form-item label="用户名">
-        <el-input v-model="form.username" disabled autocomplete="off"></el-input>
-      </el-form-item>
-      <el-form-item label="昵称">
-        <el-input v-model="form.nickname" autocomplete="off"></el-input>
-      </el-form-item>
-        <el-form-item label="班级">
-            <el-input v-model="className" disabled autocomplete="off"></el-input>
-        </el-form-item>
-      <el-form-item label="邮箱">
-        <el-input v-model="form.email" autocomplete="off"></el-input>
-      </el-form-item>
-      <el-form-item label="电话">
-        <el-input v-model="form.phone" autocomplete="off"></el-input>
-      </el-form-item>
-      <el-form-item label="地址">
-        <el-input type="textarea" v-model="form.address" autocomplete="off"></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="save">确 定</el-button>
-      </el-form-item>
-    </el-form>
-  </el-card>
+                <el-form-item label="用户名">
+                    <el-input v-model="form.username" disabled autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="昵称">
+                    <el-input v-model="form.nickname" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="班级">
+                    <el-input v-model="className" disabled autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="邮箱">
+                    <el-input v-model="form.email" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="电话">
+                    <el-input v-model="form.phone" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="地址">
+                    <el-input type="textarea" v-model="form.address" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="save">确 定</el-button>
+                </el-form-item>
+            </el-form>
+        </el-card>
+
+        <div>
+            <el-dialog title="信息" :visible.sync="dialogFormVisible" width="40%" :close-on-click-modal="false">
+                <el-form label-width="120px" size="small" style="width: 80%; margin: 0 auto">
+                    <el-form-item label="班级密钥">
+                        <el-input  v-model="form.key" autocomplete="off" clearable ></el-input>
+                    </el-form-item>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button @click="dialogFormVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="saveClass">确 定</el-button>
+                </div>
+            </el-dialog>
+        </div>
+    </div>
+
 </template>
 
 <script>
@@ -46,6 +68,7 @@ export default {
     return {
       form: {},
       className:"",
+      dialogFormVisible:false,
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {}
     }
   },
@@ -83,7 +106,21 @@ export default {
     },
     handleAvatarSuccess(res) {
       this.form.avatarUrl = res
-    }
+    },
+      addClass(){
+          this.dialogFormVisible = true
+      },
+      saveClass(){
+          request.put("/cla/addClass/"+this.form.key+"/"+this.user.id).then(res=>{
+              if (res.code == 200){
+                  this.$message.success("加入班级成功")
+                  this.dialogFormVisible = false
+                  this.load()
+              }else {
+                  this.$message.error(res.msg)
+              }
+          })
+      }
   }
 }
 </script>

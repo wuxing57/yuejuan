@@ -48,6 +48,10 @@ public class UserController {
     @Resource
     private IUserService userService;
 
+    @GetMapping("/version")
+    public String version(){
+        return "111";
+    }
     @ApiOperation("/获取所有学生")
     @GetMapping("/student")
     public Result getStudent(){

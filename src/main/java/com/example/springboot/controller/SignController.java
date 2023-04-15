@@ -10,9 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletOutputStream;
 import java.net.URLEncoder;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.springboot.controller.vo.SignExcel;
 import com.example.springboot.controller.vo.SignVo;
 import com.example.springboot.entity.Exam;
 import com.example.springboot.entity.StudentPaper;
@@ -26,6 +28,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -223,11 +227,30 @@ public class SignController {
     public void export(HttpServletResponse response) throws Exception {
         // 从数据库查询出所有的数据
         List<Sign> list = signService.list();
+
+        List<Integer> userIds = list.stream().map(Sign::getUserId).collect(Collectors.toList());
+        List<Integer> examIds = list.stream().map(Sign::getExamId).collect(Collectors.toList());
+
+        Map<Integer, String> userMap = userService.listByIds(userIds).stream().collect(Collectors.toMap(User::getId, User::getUsername));
+        Map<Integer, String> examMap = examService.listByIds(userIds).stream().collect(Collectors.toMap(Exam::getId, Exam::getName));
+
+        ArrayList<SignExcel> signExcelArrayList = new ArrayList<>();
+        for (Sign sign : list) {
+            SignExcel signExcel = new SignExcel();
+            signExcel.setStatus(sign.getStatus());
+            signExcel.setUserName(userMap.get(sign.getUserId()));
+            signExcel.setExamName(examMap.get(sign.getExamId()));
+            signExcelArrayList.add(signExcel);
+        }
         // 在内存操作，写出到浏览器
         ExcelWriter writer = ExcelUtil.getWriter(true);
-
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("userName", "姓名");
+        map.put("examName", "考试名称");
+        map.put("status", "状态");
+        writer.setHeaderAlias(map);
         // 一次性写出list内的对象到excel，使用默认样式，强制输出标题
-        writer.write(list, true);
+        writer.write(signExcelArrayList, true);
 
         // 设置浏览器响应的格式
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");

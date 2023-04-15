@@ -153,7 +153,7 @@
         <el-form-item label="解析">
           <el-input v-model="form.detial" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="难易程度">
+        <el-form-item label="难易程度" v-if="form.courseId != null">
           <el-rate
               v-model="form.level"
               :texts="['简单','一般','中等','困难','很难']"
@@ -178,6 +178,8 @@
 </template>
 
 <script>
+import request from "@/utils/request";
+
 export default {
   name: "Question",
   data() {
@@ -205,6 +207,19 @@ export default {
       this.courses=res.data
     })
   },
+    watch:{
+      'form.courseId':{
+         handler(newVal, oldVal){
+             const courseId =Number(newVal)
+             if (newVal !== oldVal && !isNaN(courseId)){
+                 console.log(newVal)
+                 request.get("/knowledge/course/"+courseId).then(res =>{
+                     this.knowledge = res.data
+                 })
+             }
+         }
+      }
+    },
   methods: {
     load() {
       this.request.get("/question/page", {
@@ -220,11 +235,11 @@ export default {
         this.total = res.data.total
       })
       //获取使用知识点
-      this.request.get("/knowledge").then(res=>{
-          if (res.code === '200'){
-              this.knowledge = res.data
-          }
-      })
+      // this.request.get("/knowledge").then(res=>{
+      //     if (res.code === '200'){
+      //         this.knowledge = res.data
+      //     }
+      // })
     },
     save() {
       if (this.form.type === 4) this.form.answer = this.more.toString()
@@ -243,6 +258,10 @@ export default {
     handleAdd() {
       this.dialogFormVisible = true
       this.form = { }
+      this.more =[]
+        request.get("/knowledge/"+courseId).then(res =>{
+            this.knowledge = res.data
+        })
       this.$nextTick(() => {
         if(this.$refs.img) {
            this.$refs.img.clearFiles();

@@ -8,11 +8,13 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletOutputStream;
 import java.net.URLEncoder;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.springboot.controller.vo.KnowledgeVo;
 import com.example.springboot.entity.Course;
 import com.example.springboot.service.ICourseService;
+import io.swagger.models.auth.In;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -54,6 +56,12 @@ public class KnowledgeController {
 
     private final String now = DateUtil.now();
 
+    @GetMapping("/course/{courseId}")
+    public Result getBycourseId(@PathVariable Integer courseId){
+        List<Knowledge> knowledgeList = knowledgeService.list(new LambdaQueryWrapper<Knowledge>()
+                .eq(Knowledge::getCourseId, courseId));
+        return Result.success(knowledgeList);
+    }
     // 新增或者更新
     @PostMapping
     public Result save(@RequestBody Knowledge knowledge) {

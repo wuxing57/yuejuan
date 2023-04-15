@@ -44,8 +44,20 @@
 <!--        <div id="pie" style="width: 500px; height: 400px"></div>-->
 <!--      </el-col>-->
 <!--    </el-row>-->
-      <div id="line" style="width: 1200px;height:400px;"></div>
-
+<!--      <div id="line" style="width: 1200px;height:400px;"></div>-->
+      <div class="container">
+          <el-row>
+              <el-col :span="8">
+                  <div id="line" style="width: 900px;height:400px;" class="item"></div>
+              </el-col>
+              <el-col :span="8">
+                  <div style="width: 1000px;height:400px;"></div>
+              </el-col>
+              <el-col :span="8">
+                  <div id="pie" style="width: 400px; height: 400px" class="item"></div>
+              </el-col>
+          </el-row>
+      </div>
 
   </div>
 </template>
@@ -60,6 +72,8 @@ export default {
         return {
             countList: [],
             line: [],
+            pipe: [],
+
 
         }
     },
@@ -125,14 +139,74 @@ export default {
                 }
             })
         },
+        drawPie() {
+            request.get("/echarts/pipe").then(res => {
+                if (res.code === '200') {
+                    this.pipe = res.data
+
+                    //console.log(y)
+                    // 基于准备好的dom，初始化echarts实例  这个和上面的main对应
+                    var chartDom = document.getElementById('pie');
+                    var myChart = echarts.init(chartDom);
+                    // 指定图表的配置项和数据
+                    let option1 = {
+                        title: {
+                            text: '班级人数饼图'
+                        },
+                        tooltip: {
+                            trigger: 'item'
+                        },
+                        legend: {
+                            top: '5%',
+                            left: 'center'
+                        },
+                        series: [
+                            {
+                                name: '人数',
+                                type: 'pie',
+                                radius: ['40%', '70%'],
+                                avoidLabelOverlap: false,
+                                label: {
+                                    show: false,
+                                    position: 'center'
+                                },
+                                emphasis: {
+                                    label: {
+                                        show: true,
+                                        fontSize: 40,
+                                        fontWeight: 'bold'
+                                    }
+                                },
+                                labelLine: {
+                                    show: false
+                                },
+                                data: this.pipe
+                            }
+                        ]
+                    };
+                    // 使用刚指定的配置项和数据显示图表。
+                    myChart.setOption(option1);
+                }
+            })
+        }
+
     },
 
     mounted() {
        this.drawLine()
+        this.drawPie()
     }
 }
 </script>
 
 <style scoped>
+.container {
+    display: flex;
+    justify-content: space-between;
+}
 
+.item {
+    width: 50%;
+    margin-right: 20px;
+}
 </style>

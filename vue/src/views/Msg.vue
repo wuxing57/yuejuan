@@ -1,7 +1,7 @@
 <template>
   <div>
     <div style="margin: 10px 0">
-      <el-input style="width: 200px" placeholder="请输入名称" suffix-icon="el-icon-search" v-model="name"></el-input>
+      <el-input style="width: 200px" placeholder="请输入名称" suffix-icon="el-icon-search" v-model="rec"></el-input>
 <!--      <el-input style="width: 200px" placeholder="请输入" suffix-icon="el-icon-message" class="ml-5" v-model="email"></el-input>-->
 <!--      <el-input style="width: 200px" placeholder="请输入" suffix-icon="el-icon-position" class="ml-5" v-model="address"></el-input>-->
       <el-button class="ml-5" type="primary" @click="load">搜索</el-button>
@@ -34,7 +34,16 @@
       <el-table-column prop="content" label="内容"  ></el-table-column>
       <el-table-column prop="sendUsername" label="发送人"  ></el-table-column>
       <el-table-column prop="recUsername" label="接收人" ></el-table-column>
-      <el-table-column prop="是否已读" label="已读数量"  ></el-table-column>
+      <el-table-column prop="readNum" label="是否已读"  >
+          <template v-slot="scope">
+                <span v-if="scope.row.readNum === 0" >
+            <el-tag type="danger">未读</el-tag>
+          </span>
+              <span v-if="scope.row.readNum === 1">
+            <el-tag type="success">已读</el-tag>
+          </span>
+          </template>
+      </el-table-column>
       <el-table-column prop="createTime" label="创建时间" ></el-table-column>
 
       <el-table-column label="操作"  width="180" align="center">
@@ -101,7 +110,7 @@ export default {
       total: 0,
       pageNum: 1,
       pageSize: 10,
-      name: "",
+      rec: "",
       form: {},
       dialogFormVisible: false,
       multipleSelection: [],
@@ -117,7 +126,7 @@ export default {
         params: {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
-          name: this.name,
+          rec: this.rec,
         }
       }).then(res => {
         this.tableData = res.data.records
@@ -196,7 +205,7 @@ export default {
       })
     },
     reset() {
-      this.name = ""
+      this.rec = ""
       this.load()
     },
     handleSizeChange(pageSize) {

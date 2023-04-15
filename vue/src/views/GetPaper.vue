@@ -2,6 +2,10 @@
     <div>
         <div>
             <el-card >
+                <div>
+                    试卷名称：{{paper.name}}
+                    分数：{{getScore}}
+                </div>
                 <el-button @click="searchQuestion()">搜索题目</el-button>
                 <el-button @click="backPaper()">返回</el-button>
                 <div>
@@ -11,6 +15,22 @@
                                 <span>选择题</span>
                             </div>
                             <div v-show="item.type===1" v-for="(item,index) in question1" :key="item.id" class="itemStyle">
+                                <div style="display: flex;" >
+                                    <div style="line-height: 1.8;flex: 1 1 0%;" >
+                                        题目{{index+1}}: &nbsp; {{item.name}} {{questionType(item.type)}}
+                                    </div>
+                                    <el-button type="danger" @click="delQuestion(item.id)">删除</el-button>
+                                </div>
+                            </div>
+                        </el-card>
+                    </div>
+                    <br>
+                    <div>
+                        <el-card class="box-card">
+                            <div slot="header" >
+                                <span>多选题</span>
+                            </div>
+                            <div v-show="item.type===4" v-for="(item,index) in question4" :key="item.id" class="itemStyle">
                                 <div style="display: flex;" >
                                     <div style="line-height: 1.8;flex: 1 1 0%;" >
                                         题目{{index+1}}: &nbsp; {{item.name}} {{questionType(item.type)}}
@@ -40,9 +60,25 @@
                     <div>
                         <el-card class="box-card">
                             <div slot="header" >
-                                <span>问答题</span>
+                                <span>选择题</span>
                             </div>
-                            <div v-show="item.type===3" v-for="(item,index) in question3" :key="item.id" class="itemStyle">
+                            <div v-show="item.type===1" v-for="(item,index) in question1" :key="item.id" class="itemStyle">
+                                <div style="display: flex;" >
+                                    <div style="line-height: 1.8;flex: 1 1 0%;" >
+                                        题目{{index+1}}: &nbsp; {{item.name}} {{questionType(item.type)}}
+                                    </div>
+                                    <el-button type="danger" @click="delQuestion(item.id)">删除</el-button>
+                                </div>
+                            </div>
+                        </el-card>
+                    </div>
+                    <br>
+                    <div>
+                        <el-card class="box-card">
+                            <div slot="header" >
+                                <span>填空题</span>
+                            </div>
+                            <div v-show="item.type===5" v-for="(item,index) in question5" :key="item.id" class="itemStyle">
                                 <div style="display: flex;">
                                     <div style="line-height: 1.8;flex: 1 1 0%;">
                                         题目{{index+1}}: &nbsp; {{item.name}} {{questionType(item.type)}}
@@ -62,15 +98,11 @@
                 <div>
                     <div style="margin: 10px 0">
                         <el-input style="width: 200px" placeholder="请输入题干" suffix-icon="el-icon-search" v-model="name"></el-input>
-                        <el-select v-model="courseId" placeholder="请选择课程" >
-                            <el-option
-                                    v-for="item in courses"
-                                    :key="item.id" :label="item.name" :value="item.id">
-                            </el-option>
-                        </el-select>
+<!
                         <el-select v-model="type" placeholder="请选择题型">
                             <el-option
-                                    v-for="item in [{name:'选择题',value:1},{name:'判断题',value:2},{name:'问答题',value:3},]"
+                                    v-for="item in [{name:'选择题',value:1},{name:'判断题',value:2},{name:'问答题',value:3},
+                                    {name:'多选题',value:4},{name:'填空题',value:5}]"
                                     :key="item.value" :label="item.name" :value="item.value">
                             </el-option>
                         </el-select>
@@ -83,11 +115,6 @@
                         <el-table-column type="selection" width="55"></el-table-column>
                         <el-table-column prop="id" label="ID" width="80" sortable></el-table-column>
                         <el-table-column prop="name" label="题干"></el-table-column>
-                        <el-table-column  label="所属课程">
-                            <template v-slot="scope">
-                                <span>{{courses.find(v => v.id===scope.row.courseId).name}}</span>
-                            </template>
-                        </el-table-column>
                         <el-table-column prop="type" label="类型">
                             <template v-slot="scope">
                                 <span v-if="scope.row.type===1" >选择题</span>
@@ -118,6 +145,7 @@
 
 <script>
 import it from "element-ui/src/locale/lang/it";
+import request from "@/utils/request";
 
 export default {
     data(){
@@ -141,13 +169,24 @@ export default {
             courseId: "",
             paperId:'',
             user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
-            courses:[],
+            paper:{},
+            score:0,
             num:0
         }
     },
     created() {
         this.load()
-
+        request.get("/paper/"+this.addpaperId).then(res=>{
+             this.paper = res.data
+        })
+    },
+    computed:{
+        getScore(){
+            this.questionList.forEach(item=>{
+               this.score += item.score
+            })
+            return this.score
+        }
     },
     methods:{
         getNum(index){
@@ -165,6 +204,7 @@ export default {
             this.request.get("/paperQuestion/get-question/"+paperId).then(res =>{
                 if (res.code ==='200'){
                     this.questionList = res.data
+                    this.score = 0
                     this.question1= []
                     this.question2= []
                     this.question3= []
@@ -251,9 +291,6 @@ export default {
                 this.total = res.data.total
 
                 this.getPaperQuestion()
-                this.request.get("/course").then(res => {
-                    this.courses=res.data
-                })
                 this.getPaperId()
             })
         },
@@ -309,6 +346,5 @@ export default {
     padding-bottom: 15px;
     border-bottom: 1px solid rgb(223, 223, 223);
     list-style-type:none;
-
 }
 </style>

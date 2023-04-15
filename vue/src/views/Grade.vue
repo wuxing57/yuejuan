@@ -14,6 +14,9 @@
                 <el-button class="ml-5" type="primary" @click="load">搜索</el-button>
                 <el-button type="warning" @click="reset">重置</el-button>
             </div>
+            <div>
+                <el-button type="primary" @click="exp" class="ml-5">导出 <i class="el-icon-top"></i></el-button>
+            </div>
 
             <el-table :data="tableData" border stripe :header-cell-class-name="'headerBg'"  @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="55"></el-table-column>
@@ -111,6 +114,9 @@ export default {
       reset() {
           this.name = ""
           this.load()
+      },
+      exp() {
+          window.open("http://localhost:9090/studentPaper/export/"+this.examId)
       },
     drawChart() {
       request.get("/echarts/grade/"+this.examId).then(res =>{

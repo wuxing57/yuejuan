@@ -20,4 +20,7 @@ public class Wrong  {
 
    @ApiModelProperty("学生试卷id")
    private Integer studentPaperId;
+
+   @ApiModelProperty("课程id")
+   private Integer courseId;
 }

@@ -34,13 +34,16 @@ public class PaperServiceImpl extends ServiceImpl<PaperMapper, Paper> implements
     @Override
     @Async("mythreadpool")
     public void getPaperScore(Integer paperId) {
+        //获取题目id
         List<PaperQuestion> paperQuestions = paperQuestionService
                 .list(new LambdaQueryWrapper<PaperQuestion>()
                         .eq(PaperQuestion::getPaperId, paperId));
         List<Integer> questionIds = paperQuestions.stream()
                 .map(PaperQuestion::getQuestionId)
                 .collect(Collectors.toList());
+        //获取题目分数
         List<Question> questions = questionService.listByIds(questionIds);
+        //计算题目分数
         Integer score = 0;
         for (Question question : questions) {
             score +=  question.getScore();

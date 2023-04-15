@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.springboot.entity.Question;
 import com.example.springboot.exception.ErrorCode;
 import com.example.springboot.exception.ServiceException;
+import com.example.springboot.service.IPaperService;
 import com.example.springboot.service.IQuestionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -50,6 +51,8 @@ public class PaperQuestionController {
     private IPaperQuestionService paperQuestionService;
     @Resource
     private IQuestionService questionService;
+    @Resource
+    private IPaperService paperService;
 
     private final String now = DateUtil.now();
 
@@ -61,14 +64,17 @@ public class PaperQuestionController {
     @GetMapping("/get-question/{paperId}")
     public Result getQuestionByPaperId(@PathVariable Integer paperId){
         LambdaQueryWrapper<PaperQuestion> paperQuestionLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        paperQuestionLambdaQueryWrapper.eq(paperId!=null,PaperQuestion::getPaperId,paperId);
+        paperQuestionLambdaQueryWrapper.eq(PaperQuestion::getPaperId,paperId);
         //查询当前试卷的所有问题id
         List<PaperQuestion> list = paperQuestionService.list(paperQuestionLambdaQueryWrapper);
         List<Integer> questionIds = list.stream()
                 .map(PaperQuestion::getQuestionId)
                 .collect(Collectors.toList());
         //获取所有的问题
-        List<Question> questions = questionService.listByIds(questionIds);
+        List<Question> questions = null;
+        if (CollUtil.isNotEmpty(questionIds)){
+            questions = questionService.listByIds(questionIds);
+        }
         return Result.success(questions);
     }
     // 新增或者更新
@@ -106,11 +112,12 @@ public class PaperQuestionController {
         //去除null
         addQuestionids = CollUtil.removeNull(addQuestionids);
         //寻找是否有相同题目
-        log.info(questionId.toString());
-        log.info(addQuestionids.toString());
+//        log.info(questionId.toString());
+//        log.info(addQuestionids.toString());
         if (!CollUtil.isNotEmpty(questionId) || !CollUtil.isNotEmpty(addQuestionids) ){
             throw new ServiceException(ErrorCode.NO_Null);
         }
+        //判断题目是否重复
         for (Integer ids : questionId) {
             for (Integer addIds : addQuestionids) {
                  if (ids.equals(addIds)){
@@ -119,6 +126,7 @@ public class PaperQuestionController {
             }
         }
         paperQuestionService.saveBatch(paperQuestionList);
+        paperService.getPaperScore(paperId);
         return Result.success();
     }
 

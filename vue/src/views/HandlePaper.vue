@@ -47,7 +47,7 @@ export default {
         this.papers=JSON.parse(res.data.paper)
         if (this.papers&&this.papers.length){
           this.papers.forEach(item=>{
-            if (item.type===1||item.type===2){
+            if (item.type===1 || item.type===2 || item.type===4 || item.type===5){
               if (item.answer === item.studentAnswer){
                 item.studentScore=item.score
               }else {
@@ -76,7 +76,7 @@ export default {
          sum+=parseInt(item.studentScore)
         if (item.studentScore != item.score){
           param.push({"questionId":item.id, "studentId":this.studentId,"studentPaperId":this.sp,
-            "studentAnswer":item.studentAnswer, "studentScore": item.studentScore})
+            "studentAnswer":item.studentAnswer, "studentScore": item.studentScore,"courseId": item.courseId})
         }
       })
       request.post("/wrong/all",JSON.stringify(param)).then(res =>{

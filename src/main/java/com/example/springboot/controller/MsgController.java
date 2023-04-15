@@ -99,7 +99,7 @@ public class MsgController {
     }
 
     @GetMapping("/page")
-    public Result findPage(@RequestParam(defaultValue = "") Integer rec,
+    public Result findPage(@RequestParam(defaultValue = "") String rec,
                            @RequestParam Integer pageNum,
                            @RequestParam Integer pageSize) {
         QueryWrapper<Msg> queryWrapper = new QueryWrapper<>();

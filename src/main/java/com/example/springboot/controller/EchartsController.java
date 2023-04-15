@@ -3,8 +3,10 @@ package com.example.springboot.controller;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.Quarter;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.springboot.common.Result;
+import com.example.springboot.controller.vo.PipeVo;
 import com.example.springboot.entity.Cla;
 import com.example.springboot.entity.StudentPaper;
 import com.example.springboot.entity.User;
@@ -104,6 +106,19 @@ public class EchartsController {
         map.put("x", day);
         map.put("y", countList);
         return Result.success(map);
+    }
+
+    @GetMapping("/pipe")
+    public Result pipe(){
+        List<PipeVo> pipeList= new ArrayList<>();
+        List<Cla> claList = claService.list();
+        for (Cla cla : claList) {
+          Integer studentCount =  userService.countByClaId(cla.getId());
+          if (studentCount != null && studentCount != 0){
+              pipeList.add(new PipeVo(studentCount, cla.getName()));
+          }
+        }
+        return Result.success(pipeList);
     }
 
     @GetMapping("/example")

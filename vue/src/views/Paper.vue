@@ -114,9 +114,30 @@
                 <el-form-item label="问答题">
                     <el-input v-model="form1.type3" autocomplete="off"></el-input>
                 </el-form-item>
+                <el-form-item label="多选题">
+                    <el-input v-model="form1.type4" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="填空题">
+                    <el-input v-model="form1.type5" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="难易程度">
+                    <el-rate
+                        v-model="form1.level"
+                        :texts="['简单','一般','中等','困难','很难']"
+                        show-text>
+                    </el-rate>
+                </el-form-item>
+                <el-form-item label="知识点id">
+                    <el-select v-model="form1.knowledgeId" placeholder="请选择">
+                        <el-option
+                            v-for="item in knowledge"
+                            :key="item.id" :label="item.name" :value="item.id">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                <el-button @click="dialogFormVisible1 = false">取 消</el-button>
                 <el-button type="primary" @click="generatorPaper">确 定</el-button>
             </div>
         </el-dialog>
@@ -132,10 +153,12 @@
                             <span v-if="item.type===1">(选择题)</span>
                             <span v-if="item.type===2">(填空题)</span>
                             <span v-if="item.type===3">(问答题)</span>
+                            <span v-if="item.type===4">(多选题)</span>
+                            <span v-if="item.type===5">(填空题)</span>
                         </el-header>
                     </div>
                     <el-main >
-                        <div v-if="item.type===1" style="font-size:medium;height:25px" >
+                        <div v-if="item.type=== 1 || item.type=== 4" style="font-size:medium;height:25px" >
                             <span> <strong>A.</strong>{{item.a}}&nbsp;&nbsp;</span>
                             <span> <strong>B.</strong>{{item.b}}&nbsp;&nbsp;</span>
                             <span> <strong>C.</strong>{{item.c}}&nbsp;&nbsp;</span>
@@ -146,14 +169,14 @@
                     </el-main>
                     <el-divider></el-divider>
                 </div>
-
             </div>
         </el-dialog>
-
     </div>
 </template>
 
 <script>
+import request from "@/utils/request";
+
 export default {
     data() {
         return {
@@ -175,6 +198,7 @@ export default {
             courses:[],
             papers:[],
             questions:[],
+            knowledge:[],
             questionList:[],
             type: "",
             courseId:""
@@ -211,7 +235,7 @@ export default {
                     this.dialogFormVisible1 = false
                     this.load()
                 } else {
-                    this.$message.error("组卷失败")
+                    this.$message.error(res.msg)
                 }
             })
         },
@@ -259,8 +283,11 @@ export default {
             })
         },
         handleAutoPaper(paperId,courseId){
-            this.form1={type1:4,type2:4,type3:2,paperId:paperId,courseId:courseId}
+            this.form1={type1:4,type2:4,type3:2,type4:2,type5:2,paperId:paperId,courseId:courseId}
             this.dialogFormVisible1 = true
+            request.get("/knowledge/course/"+courseId).then(res =>{
+                 this.knowledge = res.data
+            })
         },
         handlePaper(paperId,courseId){
             console.log(paperId)
