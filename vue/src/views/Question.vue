@@ -52,8 +52,16 @@
           <span v-if="scope.row.type===5">填空题</span>
         </template>
       </el-table-column>
-      <el-table-column prop="level" label="难度"></el-table-column>
-      <el-table-column prop="userId" label="出题人id"></el-table-column>
+      <el-table-column prop="level" label="难度">
+          <template v-slot="scope">
+              <span v-if="scope.row.level===1" >简单</span>
+              <span v-if="scope.row.level===2">一般</span>
+              <span v-if="scope.row.level===3">中等</span>
+              <span v-if="scope.row.level===4">困难</span>
+              <span v-if="scope.row.level===5">很难</span>
+          </template>
+      </el-table-column>
+      <el-table-column prop="userName" label="出题人"></el-table-column>
 <!--      <el-table-column prop="detial" label="解析"></el-table-column>-->
       <el-table-column prop="time" label="出题时间"></el-table-column>
 <!--      <el-table-column prop="answer" label="答案"></el-table-column>-->
@@ -153,14 +161,14 @@
         <el-form-item label="解析">
           <el-input v-model="form.detial" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="难易程度" v-if="form.courseId != null">
+        <el-form-item label="难易程度" >
           <el-rate
               v-model="form.level"
               :texts="['简单','一般','中等','困难','很难']"
               show-text>
           </el-rate>
         </el-form-item>
-        <el-form-item label="知识点id">
+        <el-form-item label="知识点id" v-if="form.courseId != null">
           <el-select v-model="form.knowledgeId" placeholder="请选择">
             <el-option
                 v-for="item in knowledge"

@@ -114,8 +114,8 @@ public class PaperController {
         //获取课程对应的所有题目
         List<Question> questionList = questionService.list(Wrappers.<Question>lambdaQuery()
                 .eq(Question::getCourseId, paperDto.getCourseId())
-                .eq(Question::getLevel, paperDto.getLevel())
-                .eq(Question::getKnowledgeId, paperDto.getKnowledgeId()));
+                .eq(paperDto.getLevel() != null && paperDto.getLevel() != 0, Question::getLevel, paperDto.getLevel())
+                .eq(paperDto.getKnowledgeId()!= null && paperDto.getKnowledgeId() != 0, Question::getKnowledgeId, paperDto.getKnowledgeId()));
         //获取选择题
         List<Question> questionList1 = questionList.stream()
                 .filter(question -> question.getType().equals(1))

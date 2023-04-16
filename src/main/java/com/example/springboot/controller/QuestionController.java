@@ -15,6 +15,7 @@ import com.example.springboot.controller.vo.QuestionVo;
 import com.example.springboot.entity.Course;
 import com.example.springboot.entity.Paper;
 import com.example.springboot.service.ICourseService;
+import com.example.springboot.service.IUserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -88,6 +89,8 @@ public class QuestionController {
         return Result.success(questionService.getById(id));
     }
 
+    @Resource
+    private IUserService userService;
     @GetMapping("/page")
     public Result findPage(@RequestParam(defaultValue = "") String name,
                            @RequestParam Integer pageNum,
@@ -117,10 +120,14 @@ public class QuestionController {
         });
         if (questionVoIPage != null){
             List<Integer> courseIds = questionVoIPage.getRecords().stream().map(Question::getCourseId).collect(Collectors.toList());
+            List<Integer> userIds = questionVoIPage.getRecords().stream().map(Question::getUserId).collect(Collectors.toList());
             List<Course> courseList = courseService.listByIds(courseIds);
+            List<User> users = userService.listByIds(userIds);
             Map<Integer, String> courseMap = courseList.stream().collect(Collectors.toMap(Course::getId, Course::getName));
+            Map<Integer, String> userMap = users.stream().collect(Collectors.toMap(User::getId, User::getNickname));
             questionVoIPage.convert( questionVo -> {
                 questionVo.setCourseName(courseMap.get(questionVo.getCourseId()));
+                questionVo.setUserName(userMap.get(questionVo.getUserId()));
                 return questionVo;
             });
         }

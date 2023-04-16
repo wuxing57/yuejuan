@@ -6,4 +6,5 @@ import lombok.Data;
 @Data
 public class QuestionVo extends Question {
     private String courseName;
+    private String userName;
 }

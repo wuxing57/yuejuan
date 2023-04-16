@@ -2,7 +2,8 @@ import axios from 'axios'
 import router from "@/router";
 
 const request = axios.create({
-    baseURL: 'http://localhost:9090',
+    // baseURL: 'http://43.142.244.146:9090',
+    baseURL: 'http://127.0.0.1:9090',
     timeout: 5000
 })
 
