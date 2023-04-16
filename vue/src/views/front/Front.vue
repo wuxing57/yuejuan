@@ -55,7 +55,6 @@
 
 <script>
 export default {
-  name: "Front",
   data() {
     return {
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {}

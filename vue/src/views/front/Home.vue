@@ -8,8 +8,8 @@
               <span>监考老师：{{item.teacher}}</span>&nbsp&nbsp
               <span>考试状态：{{item.state}}</span>&nbsp&nbsp
               <div>
-                  <span><el-button @click="sign(item.id)" :disabled="notClick(item.time)">报名</el-button></span>&nbsp&nbsp
-                  <span><el-button @click="attend(item.id)" :disabled="notClick(item.time)">参加考试</el-button></span>
+                  <span><el-button @click="sign(item.id)" :disabled="notClickSign(item.time)">报名</el-button></span>&nbsp&nbsp
+                  <span><el-button @click="attend(item.id)" >参加考试</el-button></span>
               </div>
 
           </div>
@@ -19,9 +19,7 @@
 
 <script>
 import request from "@/utils/request";
-
 export default {
-  name: "FrontHome",
   data() {
     return {
       tableData: [],
@@ -40,7 +38,7 @@ export default {
   },
   methods: {
     load() {
-      this.request.get("/exam/page", {
+      request.get("/exam/page", {
         params: {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
@@ -92,11 +90,16 @@ export default {
         }
       })
     },
-      notClick(time){
+      notClickSign(time){
         let time1 = new Date(time).getTime();
-        let time2 = new Date().getTime();
-        return time2 > time1
+        let now = new Date().getTime();
+        return now > time1
       },
+      // notClickAttend(time){
+      //     let time1 = new Date(time).getTime();
+      //     let now = new Date().getTime();
+      //     return now > time1
+      // },
   }
 }
 </script>
