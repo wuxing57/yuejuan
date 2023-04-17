@@ -1,16 +1,16 @@
 <template>
  <div>
    <el-card>
-       <div  v-for="item in msgList">
+       <div  v-for="(item, index) in msgList">
 <!--          <div>{{item.title}}</div>-->
 <!--          <div>{{item.readNum}}</div>-->
-        <el-collapse  @change="handleChange(item.id)" accordion>
+        <el-collapse v-model="activeName" @change="handleChange(item.id)" accordion>
           <template>
                <el-tag style="margin-left: 900px; margin-top: 60px">{{item.readNum == 1 ? "已读":"未读"}}</el-tag>
           </template>
-          <el-collapse-item :title=item.title name="1">
+          <el-collapse-item :title=item.title :name="index +''">
             <div>发送人：{{item.sendUsername}}</div>
-            <div>发生时间：{{item.createTime}}</div>
+            <div>发送时间：{{item.createTime}}</div>
              <div>内容：{{item.content}}</div>
           </el-collapse-item>
         </el-collapse>
@@ -39,6 +39,7 @@ export default {
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
       msgList:[],
       pageNum: 1,
+      activeName:['0'],
       pageSize:10,
       total:0
 

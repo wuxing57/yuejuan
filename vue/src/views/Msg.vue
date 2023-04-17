@@ -31,7 +31,11 @@
       <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column prop="id" label="ID" width="80" sortable></el-table-column>
       <el-table-column prop="title" label="标题" ></el-table-column>
-      <el-table-column prop="content" label="内容"  ></el-table-column>
+      <el-table-column prop="content" label="内容"  >
+          <template v-slot="scope">
+              <el-button @click="viewContent(scope.row.content)">查看</el-button>
+          </template>
+      </el-table-column>
       <el-table-column prop="sendUsername" label="发送人"  ></el-table-column>
       <el-table-column prop="recUsername" label="接收人" ></el-table-column>
       <el-table-column prop="readNum" label="是否已读"  >
@@ -75,13 +79,10 @@
       </el-pagination>
     </div>
 
-    <el-dialog title="信息" :visible.sync="dialogFormVisible" width="40%" :close-on-click-modal="false">
+    <el-dialog title="信息" :visible.sync="dialogFormVisible" width="80%" :close-on-click-modal="false">
       <el-form label-width="120px" size="small" style="width: 80%; margin: 0 auto">
         <el-form-item label="标题">
           <el-input v-model="form.title" autocomplete="off" ></el-input>
-        </el-form-item>
-        <el-form-item label="内容">
-          <el-input v-model="form.content" autocomplete="off" ></el-input>
         </el-form-item>
         <el-form-item label="接收人">
           <el-select v-model="form.rec" placeholder="请选择">
@@ -91,18 +92,29 @@
             </el-option>
           </el-select>
         </el-form-item>
+          <el-form-item label="内容">
+              <editor v-model="form.content"></editor>
+              <!--          <el-input v-model="form.content" autocomplete="off" ></el-input>-->
+          </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="save">确 定</el-button>
       </div>
     </el-dialog>
+
+      <el-dialog title="内容" :visible.sync="viewContentVisible" width="60%" :close-on-click-modal="false">
+          <el-card>
+              <div v-html="content"></div>
+          </el-card>
+      </el-dialog>
   </div>
 </template>
 
 <script>
+import Editor from '@/components/editor/Editor.vue'
 export default {
-  name: "Msg",
+ components:{Editor},
   data() {
     return {
       tableData: [],
@@ -111,16 +123,30 @@ export default {
       pageNum: 1,
       pageSize: 10,
       rec: "",
+      content: "",
       form: {},
       dialogFormVisible: false,
+      viewContentVisible: false,
       multipleSelection: [],
+      editor: null,
+      toolbarConfig: { },
+      editorConfig: { placeholder: '请输入内容...' },
+      mode: 'default', // or 'simple'
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {}
     }
   },
   created() {
     this.load()
   },
+    beforeDestroy() {
+        const editor = this.editor
+        if (editor == null) return
+        editor.destroy() // 组件销毁时，及时销毁编辑器
+    },
   methods: {
+      onCreated(editor) {
+          this.editor = Object.seal(editor) // 一定要用 Object.seal() ，否则会报错
+      },
     load() {
       this.request.get("/msg/page", {
         params: {
@@ -139,6 +165,11 @@ export default {
            }
       })
     },
+      viewContent(count){
+         console.log("count",count)
+         this.content = count
+         this.viewContentVisible = true
+      },
     save() {
       this.form.send = this.user.id
       this.request.post("/msg", this.form).then(res => {
