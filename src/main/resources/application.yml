@@ -24,7 +24,7 @@ spring:
     # Redis服务器连接密码（默认为空）
     password: 123456
     # 连接超时时间
-    timeout: 10s
+    timeout: 1000s
     lettuce:
       pool:
         # 连接池最大连接数
@@ -35,27 +35,10 @@ spring:
         max-idle: 10
         # 连接池中的最小空闲连接
         min-idle: 0
-#  kafka:
-#    # kafka服务地址
-#    bootstrap-servers: 43.142.244.146:9092
-#    producer:
-#      # 生产者消息key序列化方式
-#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-#      # 生产者消息value序列化方式
-#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-#    consumer:
-#      # 消费者组
-#      group-id: test-consumer-group
-#      # 消费者消息value反序列化方式
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      # 消费者消息value反序列化方式
-#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-mybatis:
-  mapper-locations: classpath:mapper/*.xml  #扫描所有mybatis的xml文件
 
-mybatis-plus:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 files:
   upload:
@@ -80,11 +63,5 @@ knife4j:
         api-rule-resources:
           - com.example.springboot.controller
 
-#doublecache:
-#  allowNull: true
-#  init: 128
-#  max: 1024
-#  expireAfterWrite: 300  #Caffeine过期时间
-#  redisExpire: 600      #Redis缓存过期时间
 
 

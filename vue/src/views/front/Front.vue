@@ -6,14 +6,14 @@
         <div style="width: 60px">
           <img src="../../assets/xtlogo.png" alt="" style="width: 50px; position: relative; top: 5px; right: 0">
         </div>
-        <div style="flex: 1">欢迎来到考试系统</div>
+        <div style="flex: 1;font-size: 18px;">欢迎来到考试系统</div>
       </div>
       <div style="flex: 1">
 
         <el-menu :default-active="'1'" class="el-menu-demo" mode="horizontal" router>
-          <el-menu-item index="/front/home">首页</el-menu-item>
-          <el-menu-item index="/front/record">考试记录</el-menu-item>
-          <el-menu-item index="/front/wrong">错题本</el-menu-item>
+          <el-menu-item index="/front/home" style="font-size: 16px;">首页</el-menu-item>
+          <el-menu-item index="/front/record" style="font-size: 16px;">考试记录</el-menu-item>
+          <el-menu-item index="/front/wrong" style="font-size: 16px;">错题本</el-menu-item>
         </el-menu>
       </div>
       <div style="width: 200px">

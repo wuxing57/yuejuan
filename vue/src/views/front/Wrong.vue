@@ -1,6 +1,6 @@
 <template>
 <div>
-  <el-card>
+  <el-card style="margin: 15px 0">
       <div>
           <div style="margin: 10px 0">
               <el-select v-model="courseId" placeholder="请选择课程" >
@@ -9,6 +9,7 @@
                           :key="item.id" :label="item.name" :value="item.id">
                   </el-option>
               </el-select>
+              <span>&nbsp;</span>
               <el-button class="ml-5" type="primary" @click="load">搜索</el-button>
               <el-button type="warning" @click="reset">重置</el-button>
           </div>

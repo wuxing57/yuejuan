@@ -3,8 +3,7 @@ package com.example.springboot.entity;
 import java.io.Serializable;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * <p>
@@ -14,8 +13,9 @@ import lombok.Setter;
  * @author 
  * @since 2022-12-14
  */
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @ApiModel(value = "Course对象", description = "")
 public class Course implements Serializable {
 

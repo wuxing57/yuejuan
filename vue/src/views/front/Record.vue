@@ -1,19 +1,20 @@
 <template>
 <div>
-  <el-card >
-      <div>
+  <el-card style="margin: 15px 0">
+      <div >
           <div style="margin: 10px 0">
-              <el-select v-model="courseId" placeholder="请选择课程" >
+              <el-select v-model="examId" placeholder="请选择考试" >
                   <el-option
-                          v-for="item in courses"
+                          v-for="item in exams"
                           :key="item.id" :label="item.name" :value="item.id">
                   </el-option>
               </el-select>
+              <span>&nbsp;</span>
               <el-button class="ml-5" type="primary" @click="load">搜索</el-button>
               <el-button type="warning" @click="reset">重置</el-button>
           </div>
       </div>
-     <div v-for="item in paperList">
+     <div v-for="item in paperList" :key="item.id">
        <div>考试id：{{item.id}}</div>
        <div>试卷名称：{{item.examName}}</div>
        <div>课程名称：{{item.courseName}}</div>
@@ -49,8 +50,8 @@ export default {
          total: 0,
          pageNum: 1,
          pageSize: 10,
-         courses:[],
-         courseId:'',
+         exams:[],
+         examId:'',
      }
  },
   created() {
@@ -58,22 +59,23 @@ export default {
   },
   methods:{
        load(){
-           request.get("/studentPaper/user/"+this.user.id,{
+           request.get("/studentPaper/page",{
                params:{
                    pageNum: this.pageNum,
                    pageSize: this.pageSize,
-                   courseId: this.courseId
+                   examId: this.examId,
+                   studentId: this.user.id
                }
            }).then(res =>{
                if (res.code ==='200'){
-                   this.paperList = res.data.data
+                   this.paperList = res.data.records
                    this.total = res.data.total
                    console.log("考试记录："+ this.paperList)
                }
            })
-           request.get("/course").then(res=>{
+           request.get("/exam").then(res=>{
                if (res.code == 200){
-                   this.courses = res.data
+                   this.exams = res.data
                }
            })
        },
@@ -98,7 +100,7 @@ export default {
           this.load()
       },
       reset() {
-          this.courseId = ""
+          this.examId = ""
           this.load()
       },
   }

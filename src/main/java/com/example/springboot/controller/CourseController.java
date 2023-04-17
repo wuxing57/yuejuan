@@ -1,22 +1,35 @@
 package com.example.springboot.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelWriter;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletOutputStream;
 import java.net.URLEncoder;
+
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.springboot.common.Constants;
+import com.example.springboot.utils.RedisUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Objects;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.springboot.common.Result;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,12 +51,15 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2022-12-14
  */
 @RestController
+@Slf4j
 @Api("课程管理接口")
 @RequestMapping("/course")
 public class CourseController {
 
     @Resource
     private ICourseService courseService;
+    @Resource
+    private RedisTemplate redisTemplate;
 
     private final String now = DateUtil.now();
 
@@ -52,6 +68,7 @@ public class CourseController {
     @ApiOperation("新增或者更新课程")
 //    @CacheEvict(cacheNames = "course", key = "'page'")
     public Result save(@RequestBody Course course) {
+        RedisUtils.deleteObject(Constants.REDIS_COURSE_ALL);
         if (course.getId() == null) {
             //course.setTime(DateUtil.now());
             //course.setUser(TokenUtils.getCurrentUser().getUsername());
@@ -64,19 +81,26 @@ public class CourseController {
     @DeleteMapping("/{id}")
 //    @CacheEvict(cacheNames = "course", key = "'page'")
     public Result delete(@PathVariable Integer id) {
+        RedisUtils.deleteObject(Constants.REDIS_COURSE_ALL);
         courseService.removeById(id);
         return Result.success();
     }
 
     @PostMapping("/del/batch")
     public Result deleteBatch(@RequestBody List<Integer> ids) {
+        RedisUtils.deleteObject(Constants.REDIS_COURSE_ALL);
         courseService.removeByIds(ids);
         return Result.success();
     }
 
     @GetMapping
     public Result findAll() {
-        return Result.success(courseService.list());
+        List<Course> courseList = RedisUtils.getCacheList(Constants.REDIS_COURSE_ALL);
+        if (CollUtil.isEmpty(courseList)){
+            courseList = courseService.list();
+            RedisUtils.setCacheList(Constants.REDIS_COURSE_ALL, courseList);
+        }
+        return Result.success(courseList);
     }
 
     @GetMapping("/{id}")
@@ -145,6 +169,5 @@ public class CourseController {
     private User getUser() {
         return TokenUtils.getCurrentUser();
     }
-
 }
 

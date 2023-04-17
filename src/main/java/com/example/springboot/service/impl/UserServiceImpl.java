@@ -1,6 +1,7 @@
 package com.example.springboot.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.log.Log;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -71,6 +72,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public User register(UserDTO userDTO) {
+        RedisUtils.deleteObject(Constants.REDIS_USER_ALL);
         User one = getOne(Wrappers.<User>lambdaQuery().eq(User::getUsername, userDTO.getUsername()));
         if (one == null) {
             one = new User();
@@ -119,9 +121,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         Integer roleId = roleMapper.selectByFlag(roleFlag);
         // 当前角色的所有菜单id集合
         List<Integer> menuIds = roleMenuMapper.selectByRoleId(roleId);
-
         // 查出系统所有的菜单(树形)
-        List<Menu> menus = menuService.findMenus("");
+        List<Menu> menus = getAllMenu();
         // new一个最后筛选完成之后的list
         List<Menu> roleMenus = new ArrayList<>();
         // 筛选当前用户角色的菜单
@@ -134,6 +135,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             children.removeIf(child -> !menuIds.contains(child.getId()));
         }
         return roleMenus;
+    }
+
+    private List<Menu> getAllMenu() {
+        List<Menu> menuList = RedisUtils.getCacheList(Constants.REDIS_MENU_ALL);
+        if (CollUtil.isEmpty(menuList)){
+            menuList = menuService.findMenus("");
+            RedisUtils.setCacheList(Constants.REDIS_MENU_ALL, menuList);
+        }
+        return menuList;
     }
 
 }

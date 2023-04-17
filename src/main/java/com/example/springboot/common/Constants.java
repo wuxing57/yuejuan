@@ -10,4 +10,13 @@ public interface Constants {
 
     String DICT_TYPE_ICON = "icon";
 
+    String REDIS_COURSE_ALL = "course:all";
+    String REDIS_EXAM_ALL = "exam:all";
+    String REDIS_USER_ALL = "user:all";
+    String REDIS_MENU_ALL = "menu:all";
+    String REDIS_COUNT = "echarts:count";
+    String REDIS_LINE = "echarts:line";
+    String REDIS_PIPE = "echarts:pipe";
+    String REDIS_GRADE_AVG = "grade:avg";
+
 }

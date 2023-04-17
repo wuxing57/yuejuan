@@ -2,15 +2,18 @@ package com.example.springboot.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.date.Quarter;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.springboot.common.Constants;
 import com.example.springboot.common.Result;
 import com.example.springboot.controller.vo.PipeVo;
 import com.example.springboot.entity.Cla;
 import com.example.springboot.entity.StudentPaper;
 import com.example.springboot.entity.User;
 import com.example.springboot.service.*;
+import com.example.springboot.utils.RedisUtils;
 import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +41,9 @@ public class EchartsController {
 
     @GetMapping("/grade/{examId}")
     public Result grade(@PathVariable Integer examId){
+        HashMap<String, Object> map = new HashMap<>();
+        ArrayList<String> claList = new ArrayList<>();
+        ArrayList<Double> avgScoreList = new ArrayList<>();
         //获取所有成绩
         QueryWrapper<StudentPaper> studentPaperQueryWrapper = new QueryWrapper<>();
         studentPaperQueryWrapper.eq("exam_id",examId);
@@ -46,9 +52,6 @@ public class EchartsController {
         Set<Integer> claSet = studentPaperList.stream()
                 .map(StudentPaper::getClaId)
                 .collect(Collectors.toSet());
-        HashMap<String, Object> map = new HashMap<>();
-        ArrayList<String> claList = new ArrayList<>();
-        ArrayList<Double> avgScoreList = new ArrayList<>();
         Optional<Integer> max = studentPaperList.stream()
                 .map(StudentPaper::getScore)
                 .max(Comparator.comparingInt(o -> o));
@@ -75,48 +78,59 @@ public class EchartsController {
 
     @GetMapping("/count")
     public Result getCount(){
-        HashMap<String, Long> map = new HashMap<>();
-        Long cla = claService.count();
-        Long paper = paperService.count();
-        Long question = questionService.count();
-        Long user = userService.count();
-        map.put("班级总数", cla);
-        map.put("试卷总量", paper);
-        map.put("题库数量", question);
-        map.put("用户总数", user);
+        //String now = LocalDateTimeUtil.now().toString();
+        Map<String, Object> map = RedisUtils.getCacheMap(Constants.REDIS_COUNT);
+        if (CollUtil.isEmpty(map)){
+            Long cla = claService.count();
+            Long paper = paperService.count();
+            Long question = questionService.count();
+            Long user = userService.count();
+            map.put("班级总数", cla);
+            map.put("试卷总量", paper);
+            map.put("题库数量", question);
+            map.put("用户总数", user);
+            RedisUtils.setCacheMap(Constants.REDIS_COUNT, map);
+        }
         return Result.success(map);
     }
 
     @GetMapping("/line")
     public Result getLine(){
-        Map<String, List<Integer>> map = new HashMap<>();
-        Calendar instance = Calendar.getInstance();
-        int month = instance.get(Calendar.MONTH)+1;
-        int year = instance.get(Calendar.YEAR);
-        int days = instance.getActualMaximum(Calendar.DAY_OF_MONTH);
-        ArrayList<Integer> day = new ArrayList<>();
-        ArrayList<Integer> countList = new ArrayList<>();
-        for (int i = 1; i <= days; i++) {
-             day.add(i);
-             String startTime = year +"-"+month+"-"+i+" 00:00";
-             String endTime = year +"-"+month+"-"+i+" 23:59";
-             Integer count = questionService.getQuestionCount(startTime, endTime);
-             countList.add(count);
+        Map<String, Object> map = RedisUtils.getCacheMap(Constants.REDIS_LINE);
+        if (CollUtil.isEmpty(map)){
+            Calendar instance = Calendar.getInstance();
+            int month = instance.get(Calendar.MONTH)+1;
+            int year = instance.get(Calendar.YEAR);
+            int days = instance.getActualMaximum(Calendar.DAY_OF_MONTH);
+            ArrayList<Integer> day = new ArrayList<>();
+            ArrayList<Integer> countList = new ArrayList<>();
+            for (int i = 1; i <= days; i++) {
+                day.add(i);
+                String startTime = year +"-"+month+"-"+i+" 00:00";
+                String endTime = year +"-"+month+"-"+i+" 23:59";
+                Integer count = questionService.getQuestionCount(startTime, endTime);
+                countList.add(count);
+            }
+            map.put("x", day);
+            map.put("y", countList);
+            RedisUtils.setCacheMap(Constants.REDIS_LINE, map);
         }
-        map.put("x", day);
-        map.put("y", countList);
+
         return Result.success(map);
     }
 
     @GetMapping("/pipe")
     public Result pipe(){
-        List<PipeVo> pipeList= new ArrayList<>();
-        List<Cla> claList = claService.list();
-        for (Cla cla : claList) {
-          Integer studentCount =  userService.countByClaId(cla.getId());
-          if (studentCount != null && studentCount != 0){
-              pipeList.add(new PipeVo(studentCount, cla.getName()));
-          }
+        List<PipeVo> pipeList = RedisUtils.getCacheList(Constants.REDIS_PIPE);
+        if (CollUtil.isEmpty(pipeList)){
+            List<Cla> claList = claService.list();
+            for (Cla cla : claList) {
+                Integer studentCount =  userService.countByClaId(cla.getId());
+                if (studentCount != null && studentCount != 0){
+                    pipeList.add(new PipeVo(studentCount, cla.getName()));
+                }
+            }
+            RedisUtils.setCacheList(Constants.REDIS_PIPE, pipeList);
         }
         return Result.success(pipeList);
     }

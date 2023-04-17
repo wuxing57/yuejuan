@@ -1,18 +1,23 @@
 <template >
   <div>
-      <div style="margin-bottom: 10px">
-          <div style="border: 1px solid #cccccc ; border-radius: 10px; margin: 10px" v-for="item in tableData" :key="item.id">
-              <div style="color: #666; padding: 10px ;font-size: 20px" >{{ item.name }}</div>
-              <span>考试地点：{{item.room}}</span>&nbsp&nbsp
-              <span>考试时间：{{item.time}}</span>&nbsp&nbsp
-              <span>监考老师：{{item.teacher}}</span>&nbsp&nbsp
-              <span>考试状态：{{item.state}}</span>&nbsp&nbsp
-              <div>
+      <div>
+        
+          <div style="border-radius: 10px; margin: 15px" v-for="item in tableData" :key="item.id">
+            <el-card>
+              <div style="color: #666; padding-bottom: 20px; font-size: 23px" class="el-icon-star-off"> {{ item.name }}</div>
+              <div style="padding-bottom: 20px;">
+                <span style="font-size: 18px;">考试地点：{{item.room}}</span>&nbsp;&nbsp;
+                <span style="font-size: 18px;">考试时间：{{item.time}}</span>&nbsp;&nbsp;
+                <span style="font-size: 18px;">监考老师：{{item.teacher}}</span>&nbsp;&nbsp;
+                <span style="font-size: 18px;">考试状态：{{item.state}}</span>&nbsp;&nbsp;
+              </div>
+              <div >
                   <span><el-button @click="sign(item.id)" :disabled="notClickSign(item.time)">报名</el-button></span>&nbsp&nbsp
                   <span><el-button @click="attend(item.id)" >参加考试</el-button></span>
               </div>
-
+            </el-card>
           </div>
+        
       </div>
   </div>
 </template>

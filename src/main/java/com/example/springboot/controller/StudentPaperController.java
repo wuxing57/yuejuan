@@ -123,42 +123,42 @@ public class StudentPaperController {
         return Result.success(studentPaperService.getById(id));
     }
 
-    /**
-     * 查询考试记录
-     * @param userId
-     * @return
-     */
-    @GetMapping("/user/{userId}")
-    public Result userId(@PathVariable Integer userId,
-                         @RequestParam Integer pageNum,
-                         @RequestParam Integer pageSize,
-                         @RequestParam(required = false) Integer courseId
-                          ) {
-        Page<StudentPaper> studentPaperPage = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<StudentPaper> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StudentPaper::getUserId, userId);
-        //查询该课程下所有的考试id
-        List<Exam> examList = examService.list(new LambdaQueryWrapper<Exam>()
-                .eq(courseId != null, Exam::getCourseId, courseId));
-        List<Integer> examIds = examList.stream().map(Exam::getId).collect(Collectors.toList());
-
-        wrapper.in(CollUtil.isNotEmpty(examIds), StudentPaper::getExamId, examIds);
-        Page<StudentPaper> page = studentPaperService.page(studentPaperPage, wrapper);
-        List<RecordVo> recordVoList = BeanUtil.copyToList(page.getRecords(), RecordVo.class);
-        recordVoList.forEach(recordVo -> {
-                    Integer getExamId = recordVo.getExamId();
-                    Exam exam = examService.getById(getExamId);
-                    String examName = exam.getName();
-                    Integer getCourseId = exam.getCourseId();
-                    String courseName = courseService.getById(getCourseId).getName();
-                    recordVo.setExamName(examName);
-                    recordVo.setCourseName(courseName);
-                });
-        HashMap<String, Object> result = new HashMap<>();
-        result.put("data", recordVoList);
-        result.put("total", page.getTotal());
-        return Result.success(result);
-    }
+//    /**
+//     * 查询考试记录
+//     * @param userId
+//     * @return
+//     */
+//    @GetMapping("/user/{userId}")
+//    public Result userId(@PathVariable Integer userId,
+//                         @RequestParam Integer pageNum,
+//                         @RequestParam Integer pageSize,
+//                         @RequestParam(required = false) Integer courseId
+//                          ) {
+//        Page<StudentPaper> studentPaperPage = new Page<>(pageNum, pageSize);
+//        LambdaQueryWrapper<StudentPaper> wrapper = new LambdaQueryWrapper<>();
+//        wrapper.eq(StudentPaper::getUserId, userId);
+//        //查询该课程下所有的考试id
+//        List<Exam> examList = examService.list(new LambdaQueryWrapper<Exam>()
+//                .eq(courseId != null, Exam::getCourseId, courseId));
+//        List<Integer> examIds = examList.stream().map(Exam::getId).collect(Collectors.toList());
+//
+//        wrapper.in(CollUtil.isNotEmpty(examIds), StudentPaper::getExamId, examIds);
+//        Page<StudentPaper> page = studentPaperService.page(studentPaperPage, wrapper);
+//        List<RecordVo> recordVoList = BeanUtil.copyToList(page.getRecords(), RecordVo.class);
+//        recordVoList.forEach(recordVo -> {
+//                    Integer getExamId = recordVo.getExamId();
+//                    Exam exam = examService.getById(getExamId);
+//                    String examName = exam.getName();
+//                    Integer getCourseId = exam.getCourseId();
+//                    String courseName = courseService.getById(getCourseId).getName();
+//                    recordVo.setExamName(examName);
+//                    recordVo.setCourseName(courseName);
+//                });
+//        HashMap<String, Object> result = new HashMap<>();
+//        result.put("data", recordVoList);
+//        result.put("total", page.getTotal());
+//        return Result.success(result);
+//    }
 
     @GetMapping("/page")
     public Result findPage(@RequestParam(defaultValue = "") Integer examId,

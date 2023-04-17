@@ -6,7 +6,11 @@
             <div>考试科目：{{course.name}}</div>
             <div>开始时间：{{exam.time}}</div>
             <div>考试时长：{{paper.duration}}</div>
+            <div>成绩：{{score}}</div>
             <div>总分：{{paper.score}}</div>
+        </div>
+        <div>
+            <el-button @click="back">返回</el-button>
         </div>
         <div v-for="(item, index) in questions" :key="item.id">
             <div>
@@ -51,56 +55,6 @@
             <el-button @click="$router.push('/front/home')">取消</el-button>
         </div>
     </div>
-
-
-<!--<div>-->
-<!--    <el-card>-->
-<!--      <div>考试名称：{{exam.name}}</div>-->
-<!--      <div>考试科目：{{course.name}}</div>-->
-<!--      <div>开始时间：{{exam.time}}</div>-->
-<!--      <div>考试时长：{{paper.duration}}</div>-->
-<!--      <div>总分：{{paper.score}}</div>-->
-<!--      <aa/>-->
-<!--      <div v-for="(item,index) in questions " :key="questions.id" >-->
-<!--        <div>-->
-<!--          {{index+1}}.{{item.name}}-->
-<!--          <span v-if="item.type===1">(选择题)</span>-->
-<!--          <span v-if="item.type===2">(判断题)</span>-->
-<!--          <span v-if="item.type===3">(问答题)</span>-->
-<!--          <span v-if="item.type===4">(多选题)</span>-->
-<!--          <span v-if="item.type===5">(填空题)</span>-->
-<!--        </div>-->
-<!--        <div v-if="item.type===1">-->
-<!--          <span><el-radio  v-model="item.studentAnswer" label="A">A.{{item.a}}</el-radio></span>-->
-<!--          <span><el-radio  v-model="item.studentAnswer" label="B">B.{{item.b}}</el-radio></span>-->
-<!--          <span><el-radio  v-model="item.studentAnswer" label="C">C.{{item.c}}</el-radio></span>-->
-<!--          <span><el-radio  v-model="item.studentAnswer" label="D">D.{{item.d}}</el-radio></span>-->
-<!--        </div>-->
-<!--        <div v-if="item.type===2">-->
-<!--          <span><el-radio  v-model="item['studentAnswer']" label="是">是</el-radio></span>-->
-<!--          <span><el-radio  v-model="item['studentAnswer']" label="否">否</el-radio></span>-->
-<!--        </div>-->
-<!--        <div v-if="item.type===3">-->
-<!--          <span><el-input type="textarea" v-model="item['studentAnswer']"></el-input></span>-->
-<!--        </div>-->
-<!--        <div  v-if="item.type===4">-->
-<!--          <el-checkbox-group v-model="more" >-->
-<!--            <el-checkbox label="A" >A.{{item.a}}</el-checkbox>-->
-<!--            <el-checkbox label="B" >B.{{item.b}}</el-checkbox>-->
-<!--            <el-checkbox label="C" >C.{{item.c}}</el-checkbox>-->
-<!--            <el-checkbox label="D" >D.{{item.d}}</el-checkbox>-->
-<!--          </el-checkbox-group>-->
-<!--        </div>-->
-<!--        <div v-if="item.type===5">-->
-<!--          <span><el-input v-model="item['studentAnswer']"></el-input></span>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </el-card>-->
-<!--  <div v-if="type === 1">-->
-<!--    <el-button @click="submitPaper">提交</el-button>-->
-<!--    <el-button @click="$router.push('/front/home')">取消</el-button>-->
-<!--  </div>-->
-<!--</div>-->
 </template>
 
 <script>
@@ -115,6 +69,7 @@ export default {
       exam:{},
       paper:{},
       course:{},
+        score:'',
       currentTime:Date.now(),
       startTime:0,
       endTime:0,
@@ -162,6 +117,17 @@ export default {
        request.get("/studentPaper/"+this.studentPaperId).then(res =>{
            if (res.code ==='200'){
              this.questions = JSON.parse(res.data.paper)
+               this.questions.forEach(item=>{
+                   if (item.type === 4){
+                       item.studentAnswer = item.studentAnswer.split(',');
+                   }
+                    this.answers.push(item.studentAnswer)
+               })
+               request.get("/studentPaper/"+this.studentPaperId).then(res =>{
+                   console.log("studentPaper",res.data)
+                   this.score = res.data.score
+               })
+               console.log("answer:",this.answers)
              const examId = res.data.examId
              console.log("examId:"+typeof examId)
              this.request.get("/exam/"+examId).then(res =>{
@@ -217,6 +183,14 @@ export default {
         }
       })
     },
+      back(){
+        if (this.type === 1){
+            this.$router.push("/front/home")
+        }
+        if (this.type === 2){
+            this.$router.push("/front/record")
+        }
+      },
   }
 
 }

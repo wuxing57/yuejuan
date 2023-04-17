@@ -16,6 +16,7 @@ import com.example.springboot.exception.ServiceException;
 import com.example.springboot.service.IUserService;
 import com.example.springboot.common.Constants;
 import com.example.springboot.common.Result;
+import com.example.springboot.utils.RedisUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Value;
@@ -90,6 +91,7 @@ public class UserController {
     @PostMapping
     @ApiOperation("新增或者更新用户")
     public Result save(@RequestBody User user) {
+        RedisUtils.deleteObject(Constants.REDIS_USER_ALL);
         String username = user.getUsername();
         if (StrUtil.isBlank(username)) {
             return Result.error(Constants.CODE_400, "参数错误");
@@ -140,19 +142,26 @@ public class UserController {
     @DeleteMapping("/{id}")
     @ApiOperation("根据id删除用户")
     public Result delete(@PathVariable Integer id) {
+        RedisUtils.deleteObject(Constants.REDIS_USER_ALL);
         return Result.success(userService.removeById(id));
     }
 
     @PostMapping("/del/batch")
     @ApiOperation("批量删除用户")
     public Result deleteBatch(@RequestBody List<Integer> ids) {
+        RedisUtils.deleteObject(Constants.REDIS_USER_ALL);
         return Result.success(userService.removeByIds(ids));
     }
 
     @GetMapping
     @ApiOperation("查询所有用户")
     public Result findAll() {
-        return Result.success(userService.list());
+        List<User> userList = RedisUtils.getCacheList(Constants.REDIS_USER_ALL);
+        if (CollUtil.isEmpty(userList)){
+            userList = userService.list();
+            RedisUtils.setCacheList(Constants.REDIS_USER_ALL, userList);
+        }
+        return Result.success(userList);
     }
 
     @GetMapping("/{id}")

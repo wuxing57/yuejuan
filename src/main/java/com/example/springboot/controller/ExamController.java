@@ -1,5 +1,6 @@
 package com.example.springboot.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.poi.excel.ExcelUtil;
@@ -11,6 +12,9 @@ import java.net.URLEncoder;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.springboot.common.Constants;
+import com.example.springboot.entity.Course;
+import com.example.springboot.utils.RedisUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
@@ -51,8 +55,8 @@ public class ExamController {
 
     // 新增或者更新
     @PostMapping
-//    @CacheEvict(value = "exam", key = "'page'")
     public Result save(@RequestBody Exam exam) {
+        RedisUtils.deleteObject(Constants.REDIS_EXAM_ALL);
         if (exam.getId() == null) {
             //exam.setTime(DateUtil.now());
             //exam.setUser(TokenUtils.getCurrentUser().getUsername());
@@ -63,21 +67,27 @@ public class ExamController {
     }
 
     @DeleteMapping("/{id}")
-//    @CacheEvict(value = "exam", key = "'page'")
     public Result delete(@PathVariable Integer id) {
+        RedisUtils.deleteObject(Constants.REDIS_EXAM_ALL);
         examService.removeById(id);
         return Result.success();
     }
 
     @PostMapping("/del/batch")
     public Result deleteBatch(@RequestBody List<Integer> ids) {
+        RedisUtils.deleteObject(Constants.REDIS_EXAM_ALL);
         examService.removeByIds(ids);
         return Result.success();
     }
 
     @GetMapping
     public Result findAll() {
-        return Result.success(examService.list());
+        List<Exam> examList = RedisUtils.getCacheList(Constants.REDIS_EXAM_ALL);
+        if (CollUtil.isEmpty(examList)){
+            examList = examService.list();
+            RedisUtils.setCacheList(Constants.REDIS_EXAM_ALL, examList);
+        }
+        return Result.success(examList);
     }
 
     @GetMapping("/{id}")
@@ -86,7 +96,6 @@ public class ExamController {
     }
 
     @GetMapping("/page")
-//    @Cacheable(value = "exam", key = "'page'")
     public Result findPage(@RequestParam(defaultValue = "",required = false) String name,
                            @RequestParam Integer pageNum,
                            @RequestParam Integer pageSize) {
