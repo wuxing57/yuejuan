@@ -1,7 +1,14 @@
 <template>
     <div>
         <div style="margin: 10px 0">
-            <el-input style="width: 200px" placeholder="请输入名称" suffix-icon="el-icon-search" v-model="name"></el-input>
+            <el-input style="width: 200px" placeholder="请输入试卷名称" suffix-icon="el-icon-search" v-model="name"></el-input>
+            <el-select v-model="courseId" placeholder="请选择课程" >
+                <el-option
+                    v-for="item in courses"
+                    :key="item.id" :label="item.name" :value="item.id">
+                </el-option>
+            </el-select>
+
             <!--      <el-input style="width: 200px" placeholder="请输入" suffix-icon="el-icon-message" class="ml-5" v-model="email"></el-input>-->
             <!--      <el-input style="width: 200px" placeholder="请输入" suffix-icon="el-icon-position" class="ml-5" v-model="address"></el-input>-->
             <el-button class="ml-5" type="primary" @click="load">搜索</el-button>
@@ -34,11 +41,7 @@
             <el-table-column prop="name" label="试卷名称"></el-table-column>
             <el-table-column prop="score" label="试卷总分"></el-table-column>
             <el-table-column prop="duration" label="考试时长(分钟)"></el-table-column>
-            <el-table-column  label="所属课程">
-                <template v-slot="scope">
-                    <span>{{courses.find(v => v.id===scope.row.courseId).name}}</span>
-                </template>
-            </el-table-column>
+            <el-table-column prop="courseName" label="所属课程" ></el-table-column>
             <el-table-column  label="查看试卷">
                 <template v-slot="scope">
                     <el-button type="success" @click="viewPaper(scope.row.id)">查看<i class="el-icon-edit"></i></el-button>
@@ -206,6 +209,9 @@ export default {
     },
     created() {
         this.load()
+        this.request.get("/course").then(res => {
+            this.courses=res.data
+        })
     },
     methods: {
         load() {
@@ -214,13 +220,11 @@ export default {
                     pageNum: this.pageNum,
                     pageSize: this.pageSize,
                     name: this.name,
+                    courseId: this.courseId,
                 }
             }).then(res => {
                 this.tableData = res.data.records
                 this.total = res.data.total
-            })
-            this.request.get("/course").then(res => {
-                this.courses=res.data
             })
         },
         questionType(type){
@@ -357,6 +361,7 @@ export default {
         },
         reset() {
             this.name = ""
+            this.courseId = ""
             this.load()
         },
         handleSizeChange(pageSize) {

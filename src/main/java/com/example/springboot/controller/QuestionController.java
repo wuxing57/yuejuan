@@ -1,5 +1,6 @@
 package com.example.springboot.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelReader;
@@ -16,12 +17,14 @@ import com.example.springboot.entity.Course;
 import com.example.springboot.entity.Paper;
 import com.example.springboot.service.ICourseService;
 import com.example.springboot.service.IUserService;
+import io.swagger.models.auth.In;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -97,41 +100,15 @@ public class QuestionController {
                            @RequestParam(required = false) Integer type,
                            @RequestParam(required = false) Integer courseId,
                            @RequestParam Integer pageSize) {
-        QueryWrapper<Question> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByDesc("id");
-        if (!"".equals(name)) {
-            queryWrapper.like("name", name);
-        }
-        if (type!=null) {
-            queryWrapper.eq("type", type);
-        }
-        if (courseId!=null) {
-            queryWrapper.eq("course_id", courseId);
-        }
-//        User currentUser = TokenUtils.getCurrentUser();
-//        if (currentUser.getRole().equals("ROLE_USER")) {
-//            queryWrapper.eq("user", currentUser.getUsername());
-//        }
-        Page<Question> questionPage = questionService.page(new Page<>(pageNum, pageSize), queryWrapper);
-        IPage<QuestionVo> questionVoIPage = questionPage.convert(question -> {
-            QuestionVo questionVo = new QuestionVo();
-            BeanUtils.copyProperties(question, questionVo);
-            return questionVo;
-        });
-        if (questionVoIPage != null){
-            List<Integer> courseIds = questionVoIPage.getRecords().stream().map(Question::getCourseId).collect(Collectors.toList());
-            List<Integer> userIds = questionVoIPage.getRecords().stream().map(Question::getUserId).collect(Collectors.toList());
-            List<Course> courseList = courseService.listByIds(courseIds);
-            List<User> users = userService.listByIds(userIds);
-            Map<Integer, String> courseMap = courseList.stream().collect(Collectors.toMap(Course::getId, Course::getName));
-            Map<Integer, String> userMap = users.stream().collect(Collectors.toMap(User::getId, User::getNickname));
-            questionVoIPage.convert( questionVo -> {
-                questionVo.setCourseName(courseMap.get(questionVo.getCourseId()));
-                questionVo.setUserName(userMap.get(questionVo.getUserId()));
-                return questionVo;
-            });
-        }
-        return Result.success(questionVoIPage);
+     List<QuestionVo>  data = null;
+     Integer count = questionService.getPageTotal(name, type, courseId);
+     if (count > 0){
+      data = questionService.getPageData(name, type, courseId, pageNum, pageSize);
+     }
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("total",count);
+        result.put("records",data);
+        return Result.success(result);
     }
     /**
     * 导出接口

@@ -178,7 +178,7 @@ public class UserController {
                            @RequestParam(defaultValue = "") String address) {
 
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByDesc("id");
+        queryWrapper.orderByAsc("id");
         if (!"".equals(username)) {
             queryWrapper.like("username", username);
         }

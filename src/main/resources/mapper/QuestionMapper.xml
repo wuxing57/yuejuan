@@ -15,4 +15,47 @@
         from question
         where time between #{startTime} and #{endTime}
     </select>
+    <select id="getPageData" resultType="com.example.springboot.controller.vo.QuestionVo">
+        select
+            q.id, q.name, q.type, q.a, q.b, q.c, q.d, q.score, q.user_id, q.detial, q.time, q.answer,
+            q.course_id, q.level, q.knowledge_id, c.name courseName, u.nickname userName
+        from question q
+                 left join course c on
+            q.course_id = c.id
+                 left join sys_user u on
+            q.user_id = u.id
+        <where>
+            <if test="name != '' and name != null">
+                and  q.name like concat('%', #{name}, '%')
+            </if>
+            <if test="type != null">
+               and q.type = #{type}
+            </if>
+            <if test="courseId != null">
+               and q.course_id = #{courseId}
+            </if>
+        </where>
+        order by  q.time desc
+        limit #{pageNum} , #{pageSize}
+    </select>
+    <select id="getPageTotal" resultType="java.lang.Integer">
+        select
+        count(*)
+        from question q
+        left join course c on
+        q.course_id = c.id
+        left join sys_user u on
+        q.user_id = u.id
+        <where>
+            <if test="name != '' and name != null">
+                and  q.name like concat('%', #{name}, '%')
+            </if>
+            <if test="type != null">
+                and q.type = #{type}
+            </if>
+            <if test="courseId != null">
+                and q.course_id = #{courseId}
+            </if>
+        </where>
+    </select>
 </mapper>

@@ -2,4 +2,34 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.springboot.mapper.PaperMapper">
 
+    <select id="getPageData" resultType="com.example.springboot.controller.vo.PaperVo">
+        select
+            p.*, c.name courseName
+        from paper p
+                 left join course c on p.course_id = c.id
+        <where>
+            <if test="name != null and name != ''">
+                and p.name like concat('%',#{name},'%')
+            </if>
+            <if test="courseId != null and courseId != ''">
+                and p.course_id = #{courseId}
+            </if>
+        </where>
+        order by p.id desc
+        limit #{pageNum},#{pageSize}
+    </select>
+    <select id="getPageTotal" resultType="java.lang.Integer">
+        select
+        count(*)
+        from paper p
+        left join course c on p.course_id = c.id
+        <where>
+            <if test="name != null and name != ''">
+                and p.name like concat('%',#{name},'%')
+            </if>
+            <if test="courseId != null and courseId != ''">
+                and p.course_id = #{courseId}
+            </if>
+        </where>
+    </select>
 </mapper>

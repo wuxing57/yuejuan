@@ -16,10 +16,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.springboot.controller.vo.GradeExcel;
-import com.example.springboot.controller.vo.RecordVo;
-import com.example.springboot.controller.vo.StudentPaperPageVo;
-import com.example.springboot.controller.vo.WrongVo;
+import com.example.springboot.controller.vo.*;
 import com.example.springboot.entity.*;
 import com.example.springboot.exception.ServiceException;
 import com.example.springboot.service.*;
@@ -168,42 +165,53 @@ public class StudentPaperController {
                            @RequestParam(defaultValue = "") Integer studentId,
                            @RequestParam Integer pageNum,
                            @RequestParam Integer pageSize) {
-        QueryWrapper<StudentPaper> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByDesc("id");
-        if (examId != null) {
-            queryWrapper.eq("exam_id", examId);
+        List<StudentPaperPageVo>  data = null;
+        Integer count = studentPaperService.getPageTotal(examId, studentId);
+        if (count > 0){
+            data = studentPaperService.getPageData(examId, studentId, pageNum, pageSize);
         }
-        if (studentId != null) {
-            queryWrapper.eq("user_id", studentId);
-        }
-//        User currentUser = TokenUtils.getCurrentUser();
-//        if (currentUser.getRole().equals("ROLE_USER")) {
-//            queryWrapper.eq("user", currentUser.getUsername());
-//        }
-        Page<StudentPaper> studentPaperPage = studentPaperService.page(new Page<>(pageNum, pageSize), queryWrapper);
-        IPage<StudentPaperPageVo> studentPaperPageVoIPage = studentPaperPage.convert(studentPaper -> {
-            StudentPaperPageVo studentPaperPageVo = new StudentPaperPageVo();
-            BeanUtils.copyProperties(studentPaper, studentPaperPageVo);
-            return studentPaperPageVo;
-        });
-        //填充数据库的id为name
-        if (studentPaperPageVoIPage != null){
-            List<Integer> studentIds = studentPaperPageVoIPage.getRecords().stream()
-                    .map(StudentPaper::getUserId).collect(Collectors.toList());
-            List<Integer> claIds = studentPaperPageVoIPage.getRecords().stream()
-                    .map(StudentPaper::getClaId).collect(Collectors.toList());
-            List<User> userList = userService.listByIds(studentIds);
-            List<Cla> claList = claService.listByIds(claIds);
-            Map<Integer, String> claMap = claList.stream().collect(Collectors.toMap(Cla::getId, Cla::getName));
-            Map<Integer, String> userMap = userList.stream().collect(Collectors.toMap(User::getId, User::getUsername));
-            studentPaperPageVoIPage.convert(studentPaperPageVo -> {
-                studentPaperPageVo.setStudentName(userMap.get(studentPaperPageVo.getUserId()));
-                studentPaperPageVo.setClaName(claMap.get(studentPaperPageVo.getClaId()));
-                return studentPaperPageVo;
-            });
-        }
-        return Result.success(studentPaperPageVoIPage);
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("total",count);
+        result.put("records",data);
+        return Result.success(result);
     }
+
+//        QueryWrapper<StudentPaper> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.orderByDesc("id");
+//        if (examId != null) {
+//            queryWrapper.eq("exam_id", examId);
+//        }
+//        if (studentId != null) {
+//            queryWrapper.eq("user_id", studentId);
+//        }
+////        User currentUser = TokenUtils.getCurrentUser();
+////        if (currentUser.getRole().equals("ROLE_USER")) {
+////            queryWrapper.eq("user", currentUser.getUsername());
+////        }
+//        Page<StudentPaper> studentPaperPage = studentPaperService.page(new Page<>(pageNum, pageSize), queryWrapper);
+//        IPage<StudentPaperPageVo> studentPaperPageVoIPage = studentPaperPage.convert(studentPaper -> {
+//            StudentPaperPageVo studentPaperPageVo = new StudentPaperPageVo();
+//            BeanUtils.copyProperties(studentPaper, studentPaperPageVo);
+//            return studentPaperPageVo;
+//        });
+//        //填充数据库的id为name
+//        if (CollUtil.isNotEmpty(studentPaperPageVoIPage.getRecords())){
+//            List<Integer> studentIds = studentPaperPageVoIPage.getRecords().stream()
+//                    .map(StudentPaper::getUserId).collect(Collectors.toList());
+//            List<Integer> claIds = studentPaperPageVoIPage.getRecords().stream()
+//                    .map(StudentPaper::getClaId).collect(Collectors.toList());
+//            List<User> userList = userService.listByIds(studentIds);
+//            List<Cla> claList = claService.listByIds(claIds);
+//            Map<Integer, String> claMap = claList.stream().collect(Collectors.toMap(Cla::getId, Cla::getName));
+//            Map<Integer, String> userMap = userList.stream().collect(Collectors.toMap(User::getId, User::getUsername));
+//            studentPaperPageVoIPage.convert(studentPaperPageVo -> {
+//                studentPaperPageVo.setStudentName(userMap.get(studentPaperPageVo.getUserId()));
+//                studentPaperPageVo.setClaName(claMap.get(studentPaperPageVo.getClaId()));
+//                return studentPaperPageVo;
+//            });
+//        }
+//        return Result.success(studentPaperPageVoIPage);
+   // }
 
     /**
     * 导出接口

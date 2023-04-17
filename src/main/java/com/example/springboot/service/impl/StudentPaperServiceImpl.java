@@ -3,6 +3,7 @@ package com.example.springboot.service.impl;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.example.springboot.controller.vo.StudentPaperPageVo;
 import com.example.springboot.entity.Exam;
 import com.example.springboot.entity.StudentPaper;
 import com.example.springboot.entity.User;
@@ -35,4 +36,14 @@ import java.util.stream.Collectors;
 public class StudentPaperServiceImpl extends ServiceImpl<StudentPaperMapper, StudentPaper> implements IStudentPaperService {
 
 
+    @Override
+    public Integer getPageTotal(Integer examId, Integer studentId) {
+        return baseMapper.getPageTotal(examId, studentId);
+    }
+
+    @Override
+    public List<StudentPaperPageVo> getPageData(Integer examId, Integer studentId, Integer pageNum, Integer pageSize) {
+        pageNum = (pageNum - 1) * pageSize;
+        return baseMapper.getPageData(examId, studentId, pageNum, pageSize);
+    }
 }

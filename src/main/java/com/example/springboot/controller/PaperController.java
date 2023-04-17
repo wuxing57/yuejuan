@@ -21,12 +21,14 @@ import com.example.springboot.exception.ServiceException;
 import com.example.springboot.service.ICourseService;
 import com.example.springboot.service.IPaperQuestionService;
 import com.example.springboot.service.IQuestionService;
+import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -221,34 +223,45 @@ public class PaperController {
 
     @GetMapping("/page")
     public Result findPage(@RequestParam(defaultValue = "") String name,
+                           @RequestParam(defaultValue = "") Integer courseId,
                            @RequestParam Integer pageNum,
                            @RequestParam Integer pageSize) {
-        QueryWrapper<Paper> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByDesc("id");
-        if (!"".equals(name)) {
-            queryWrapper.like("name", name);
+        List<PaperVo> data = null;
+        Integer count = paperService.getPageTotal(name, courseId);
+        if (count > 0) {
+            data = paperService.getPageData(name, courseId, pageNum, pageSize);
         }
-//        User currentUser = TokenUtils.getCurrentUser();
-//        if (currentUser.getRole().equals("ROLE_USER")) {
-//            queryWrapper.eq("user", currentUser.getUsername());
-//        }
-        Page<Paper> paperPage = paperService.page(new Page<>(pageNum, pageSize), queryWrapper);
-        IPage<PaperVo> paperVoIPage = paperPage.convert(paper -> {
-            PaperVo paperVo = new PaperVo();
-            BeanUtils.copyProperties(paper, paperVo);
-            return paperVo;
-        });
-        if (paperVoIPage != null){
-            List<Integer> courseIds = paperVoIPage.getRecords().stream().map(Paper::getCourseId).collect(Collectors.toList());
-            List<Course> courseList = courseService.listByIds(courseIds);
-            Map<Integer, String> courseMap = courseList.stream().collect(Collectors.toMap(Course::getId, Course::getName));
-            paperVoIPage.convert(paperVo -> {
-                paperVo.setCourseName(courseMap.get(paperVo.getCourseId()));
-                return paperVo;
-            });
-        }
-        return Result.success(paperVoIPage);
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("total", count);
+        result.put("records", data);
+        return Result.success(result);
     }
+//        QueryWrapper<Paper> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.orderByDesc("id");
+//        if (!"".equals(name)) {
+//            queryWrapper.like("name", name);
+//        }
+////        User currentUser = TokenUtils.getCurrentUser();
+////        if (currentUser.getRole().equals("ROLE_USER")) {
+////            queryWrapper.eq("user", currentUser.getUsername());
+////        }
+//        Page<Paper> paperPage = paperService.page(new Page<>(pageNum, pageSize), queryWrapper);
+//        IPage<PaperVo> paperVoIPage = paperPage.convert(paper -> {
+//            PaperVo paperVo = new PaperVo();
+//            BeanUtils.copyProperties(paper, paperVo);
+//            return paperVo;
+//        });
+//        if (paperVoIPage != null){
+//            List<Integer> courseIds = paperVoIPage.getRecords().stream().map(Paper::getCourseId).collect(Collectors.toList());
+//            List<Course> courseList = courseService.listByIds(courseIds);
+//            Map<Integer, String> courseMap = courseList.stream().collect(Collectors.toMap(Course::getId, Course::getName));
+//            paperVoIPage.convert(paperVo -> {
+//                paperVo.setCourseName(courseMap.get(paperVo.getCourseId()));
+//                return paperVo;
+//            });
+//        }
+//        return Result.success(paperVoIPage);
+
 
     /**
     * 导出接口

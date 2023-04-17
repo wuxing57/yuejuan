@@ -1,5 +1,6 @@
 package com.example.springboot.service.impl;
 
+import com.example.springboot.controller.vo.QuestionVo;
 import com.example.springboot.entity.Question;
 import com.example.springboot.mapper.QuestionMapper;
 import com.example.springboot.service.IQuestionService;
@@ -31,5 +32,16 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
     @Override
     public Integer getQuestionCount(String startTime, String endTime) {
         return baseMapper.getQuestionCount(startTime, endTime);
+    }
+
+    @Override
+    public List<QuestionVo> getPageData(String name, Integer type, Integer courseId, Integer pageNum, Integer pageSize) {
+        pageNum = (pageNum - 1) * pageSize;
+        return  baseMapper.getPageData(name, type, courseId, pageNum, pageSize);
+    }
+
+    @Override
+    public Integer getPageTotal(String name, Integer type, Integer courseId) {
+        return  baseMapper.getPageTotal(name, type, courseId);
     }
 }

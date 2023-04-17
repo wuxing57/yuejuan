@@ -1,7 +1,13 @@
 <template>
   <div>
     <div style="margin: 10px 0">
-      <el-input style="width: 200px" placeholder="请输入名称" suffix-icon="el-icon-search" v-model="rec"></el-input>
+        <el-select v-model="rec" placeholder="请选择">
+            <el-option
+                    v-for="item in student"
+                    :key="item.id" :label="item.username" :value="item.id">
+            </el-option>
+        </el-select>
+<!--      <el-input style="width: 200px" placeholder="请输入名称" suffix-icon="el-icon-search" v-model="rec"></el-input>-->
 <!--      <el-input style="width: 200px" placeholder="请输入" suffix-icon="el-icon-message" class="ml-5" v-model="email"></el-input>-->
 <!--      <el-input style="width: 200px" placeholder="请输入" suffix-icon="el-icon-position" class="ml-5" v-model="address"></el-input>-->
       <el-button class="ml-5" type="primary" @click="load">搜索</el-button>
@@ -119,6 +125,7 @@ export default {
     return {
       tableData: [],
       student: [],
+      //student: [],
       total: 0,
       pageNum: 1,
       pageSize: 10,

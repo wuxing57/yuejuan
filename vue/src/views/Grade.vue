@@ -99,6 +99,9 @@ export default {
       request.get("/exam/"+this.examId).then(res=>{
         this.exam = res.data
       })
+        this.request.get("/user").then(res=>{
+            this.student = res.data
+        })
 
   },
       handleSizeChange(pageSize) {
@@ -112,7 +115,7 @@ export default {
           this.load()
       },
       reset() {
-          this.name = ""
+          this.studentId = ""
           this.load()
       },
       exp() {

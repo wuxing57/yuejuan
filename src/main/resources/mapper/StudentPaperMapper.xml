@@ -2,4 +2,38 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.springboot.mapper.StudentPaperMapper">
 
+    <select id="getPageData" resultType="com.example.springboot.controller.vo.StudentPaperPageVo">
+        select
+            sp.*, e.name examName, su.username studentName, c.name claName
+        from student_paper sp
+                 left join exam e on sp.exam_id = e.id
+                 left join sys_user su on sp.user_id = su.id
+                 left join cla c on sp.cla_id = c.id
+        <where>
+            <if test="examId != null and examId != ''">
+                and sp.exam_id = #{examId}
+            </if>
+            <if test="studentId != null and studentId != '' ">
+                and sp.user_id = #{studentId}
+            </if>
+        </where>
+        order by sp.time desc
+        limit #{pageNum} , #{pageSize}
+    </select>
+    <select id="getPageTotal" resultType="java.lang.Integer">
+        select
+        count(*)
+        from student_paper sp
+        left join exam e on sp.exam_id = e.id
+        left join sys_user su on sp.user_id = su.id
+        left join cla c on sp.cla_id = c.id
+        <where>
+            <if test="examId != null and examId != ''">
+                and sp.exam_id = #{examId}
+            </if>
+            <if test="studentId != null and studentId != '' ">
+                and sp.user_id = #{studentId}
+            </if>
+        </where>
+    </select>
 </mapper>

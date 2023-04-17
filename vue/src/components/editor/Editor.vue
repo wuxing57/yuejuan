@@ -14,8 +14,7 @@ export default {
                 return {}
             }
         },
-        // v-model 双向绑定：接受父组件的值
-        // https://cn.vuejs.org/v2/guide/components-custom-events.html#%E8%87%AA%E5%AE%9A%E4%B9%89%E7%BB%84%E4%BB%B6%E7%9A%84-v-model
+
         value: {
             type: String,
             default: ''

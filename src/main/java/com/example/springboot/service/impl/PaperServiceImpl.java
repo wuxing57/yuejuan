@@ -1,6 +1,7 @@
 package com.example.springboot.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.springboot.controller.vo.PaperVo;
 import com.example.springboot.entity.Paper;
 import com.example.springboot.entity.PaperQuestion;
 import com.example.springboot.entity.Question;
@@ -52,5 +53,16 @@ public class PaperServiceImpl extends ServiceImpl<PaperMapper, Paper> implements
         paper.setId(paperId);
         paper.setScore(score);
         this.updateById(paper);
+    }
+
+    @Override
+    public Integer getPageTotal(String name, Integer courseId) {
+        return baseMapper.getPageTotal(name, courseId);
+    }
+
+    @Override
+    public List<PaperVo> getPageData(String name, Integer courseId, Integer pageNum, Integer pageSize) {
+        pageNum = (pageNum - 1) *pageSize;
+        return baseMapper.getPageData(name, courseId, pageNum, pageSize);
     }
 }

@@ -8,17 +8,22 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletOutputStream;
 import java.net.URLEncoder;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.springboot.controller.vo.MsgVo;
+import com.example.springboot.controller.vo.QuestionVo;
 import com.example.springboot.service.IUserService;
+import io.swagger.models.auth.In;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -64,6 +69,12 @@ public class MsgController {
         return Result.success();
     }
 
+    @GetMapping("/getRec")
+    public Result getRec(){
+        Set<Integer> recIds = msgService.list().stream().map(Msg::getRec).collect(Collectors.toSet());
+        List<User> users = userService.listByIds(recIds);
+        return Result.success(users);
+    }
     @PutMapping("/read/{msgId}")
     public Result changeRead(@PathVariable Integer msgId){
         Msg msg = msgService.getById(msgId);
@@ -99,44 +110,19 @@ public class MsgController {
     }
 
     @GetMapping("/page")
-    public Result findPage(@RequestParam(defaultValue = "") String rec,
+    public Result findPage(@RequestParam(defaultValue = "") Integer rec,
                            @RequestParam Integer pageNum,
                            @RequestParam Integer pageSize) {
-        QueryWrapper<Msg> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByDesc("id");
-        if (!"".equals(rec)) {
-            queryWrapper.like("rec", rec);
+        List<MsgVo>  data = null;
+        Integer count = msgService.getPageTotal(rec);
+        if (count > 0){
+            data = msgService.getPageData(rec, pageNum, pageSize);
         }
-//        User currentUser = TokenUtils.getCurrentUser();
-//        if (currentUser.getRole().equals("ROLE_USER")) {
-//            queryWrapper.eq("user", currentUser.getUsername());
-//        }
-        Page<Msg> msgPage = msgService.page(new Page<>(pageNum, pageSize), queryWrapper);
-        IPage<MsgVo> msgVoIPage = msgPage.convert(msg -> {
-            MsgVo msgVo = new MsgVo();
-            BeanUtils.copyProperties(msg, msgVo);
-            return msgVo;
-        });
-        if (msgVoIPage!= null){
-            List<Integer> sendIds = msgVoIPage.getRecords().stream()
-                    .map(Msg::getSend)
-                    .collect(Collectors.toList());
-            List<Integer> recIds = msgVoIPage.getRecords().stream()
-                    .map(Msg::getRec)
-                    .collect(Collectors.toList());
-            List<User> sendList = userService.listByIds(sendIds);
-            List<User> recList = userService.listByIds(recIds);
-            Map<Integer, String> sendMap = sendList.stream().collect(Collectors.toMap(User::getId, User::getUsername));
-            Map<Integer, String> recMap = recList.stream().collect(Collectors.toMap(User::getId, User::getUsername));
-            msgVoIPage.convert(msgVo -> {
-        msgVo.setSendUsername(sendMap.get(msgVo.getSend()));
-        msgVo.setRecUsername(recMap.get(msgVo.getRec()));
-        return msgVo;
-    });
-}
-        return Result.success(msgVoIPage);
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("total",count);
+        result.put("records",data);
+        return Result.success(result);
     }
-
     /**
     * 导出接口
     */

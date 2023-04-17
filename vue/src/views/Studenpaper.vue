@@ -332,7 +332,8 @@ export default {
       })
     },
     reset() {
-      this.name = ""
+      this.examId = ""
+      this.studentId = ""
       this.load()
     },
     handleSizeChange(pageSize) {

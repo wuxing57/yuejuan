@@ -5,8 +5,6 @@
     </div>
     <el-card>
       欢迎使用本系统
-      <el-divider />
-      虎虎生威，虎年大吉
     </el-card>
 
   </div>

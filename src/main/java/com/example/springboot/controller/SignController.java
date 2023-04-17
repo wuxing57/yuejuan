@@ -16,6 +16,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.springboot.controller.vo.SignExcel;
 import com.example.springboot.controller.vo.SignVo;
+import com.example.springboot.controller.vo.StudentPaperPageVo;
 import com.example.springboot.entity.Exam;
 import com.example.springboot.entity.StudentPaper;
 import com.example.springboot.exception.ServiceException;
@@ -28,10 +29,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -186,38 +184,19 @@ public class SignController {
     }
 
     @GetMapping("/page")
-    public Result findPage(@RequestParam(defaultValue = "") String name,
+    public Result findPage(@RequestParam(defaultValue = "") Integer studentId,
+                           @RequestParam(defaultValue = "") Integer examId,
                            @RequestParam Integer pageNum,
                            @RequestParam Integer pageSize) {
-        QueryWrapper<Sign> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByDesc("id");
-        if (!"".equals(name)) {
-            queryWrapper.like("name", name);
+        List<SignVo>  data = null;
+        Integer count = signService.getPageTotal(studentId, examId);
+        if (count > 0){
+            data = signService.getPageData(studentId, examId, pageNum, pageSize);
         }
-//        User currentUser = TokenUtils.getCurrentUser();
-//        if (currentUser.getRole().equals("ROLE_USER")) {
-//            queryWrapper.eq("user", currentUser.getUsername());
-//        }
-        Page<Sign> signPage = signService.page(new Page<>(pageNum, pageSize), queryWrapper);
-        IPage<SignVo> signVoIPage = signPage.convert(sign -> {
-            SignVo signVo = new SignVo();
-            BeanUtils.copyProperties(sign, signVo);
-            return signVo;
-        });
-        if (signVoIPage != null){
-            List<Integer> userIds = signVoIPage.getRecords().stream().map(Sign::getUserId).collect(Collectors.toList());
-            List<Integer> examIds = signVoIPage.getRecords().stream().map(Sign::getExamId).collect(Collectors.toList());
-            List<Exam> examList = examService.listByIds(examIds);
-            List<User> userList = userService.listByIds(userIds);
-            Map<Integer, String> examMap = examList.stream().collect(Collectors.toMap(Exam::getId, Exam::getName));
-            Map<Integer, String> userMap = userList.stream().collect(Collectors.toMap(User::getId, User::getUsername));
-            signVoIPage.convert(signVo -> {
-                signVo.setExamName(examMap.get(signVo.getExamId()));
-                signVo.setStudentName(userMap.get(signVo.getUserId()));
-                return signVo;
-            });
-        }
-        return Result.success(signVoIPage);
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("total",count);
+        result.put("records",data);
+        return Result.success(result);
     }
 
     /**

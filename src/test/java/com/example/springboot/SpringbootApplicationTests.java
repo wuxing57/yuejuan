@@ -5,6 +5,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.example.springboot.controller.vo.QuestionVo;
 import com.example.springboot.entity.Exam;
 import com.example.springboot.entity.StudentPaper;
 import com.example.springboot.entity.User;
@@ -27,6 +28,7 @@ import java.util.*;
 
 @SpringBootTest
 class SpringbootApplicationTests {
+
 
     @Test
     void contextLoads() {
@@ -62,5 +64,11 @@ class SpringbootApplicationTests {
         System.out.println(month);
         System.out.println(year);
         System.out.println(days);
+    }
+
+    @Test
+    public void questionpage(){
+        System.out.println("questionService.getPageTotal(\"\", 1, 2) = " + questionService.getPageTotal("", 1, 2));
+       // System.out.println(pageData);
     }
 }

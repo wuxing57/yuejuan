@@ -1,7 +1,19 @@
 <template>
   <div>
     <div style="margin: 10px 0">
-      <el-input style="width: 200px" placeholder="请输入名称" suffix-icon="el-icon-search" v-model="name"></el-input>
+        <el-select v-model="examId" placeholder="请选择考试" >
+            <el-option
+                    v-for="item in exam"
+                    :key="item.id" :label="item.name" :value="item.id">
+            </el-option>
+        </el-select>
+
+        <el-select v-model="studentId" placeholder="请选择学生" >
+            <el-option
+                    v-for="item in student"
+                    :key="item.id" :label="item.username" :value="item.id">
+            </el-option>
+        </el-select>
 <!--      <el-input style="width: 200px" placeholder="请输入" suffix-icon="el-icon-message" class="ml-5" v-model="email"></el-input>-->
 <!--      <el-input style="width: 200px" placeholder="请输入" suffix-icon="el-icon-position" class="ml-5" v-model="address"></el-input>-->
       <el-button class="ml-5" type="primary" @click="load">搜索</el-button>
@@ -78,10 +90,13 @@ export default {
       tableData: [],
       exam: [],
       userInfo: [],
+        student: [],
       total: 0,
       pageNum: 1,
       pageSize: 10,
       name: "",
+      examId: "",
+      studentId: "",
       form: {},
       multipleSelection: [],
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {}
@@ -89,6 +104,12 @@ export default {
   },
   created() {
     this.load()
+      this.request.get("/exam").then(res=>{
+          this.exam = res.data
+      })
+      this.request.get("/user").then(res=>{
+          this.student = res.data
+      })
   },
   methods: {
     load() {
@@ -96,17 +117,12 @@ export default {
         params: {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
-          name: this.name,
+          examId: this.examId,
+          studentId: this.studentId,
         }
       }).then(res => {
         this.tableData = res.data.records
         this.total = res.data.total
-      })
-      this.request.get("/user").then(res =>{
-          this.userInfo = res.data
-      })
-      this.request.get("/exam").then(res =>{
-        this.exam = res.data
       })
     },
     save() {
@@ -182,7 +198,8 @@ export default {
       })
     },
     reset() {
-      this.name = ""
+        this.examId = ""
+        this.studentId = ""
       this.load()
     },
     handleSizeChange(pageSize) {
