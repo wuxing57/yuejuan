@@ -1,6 +1,7 @@
 package com.example.springboot;
 
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
@@ -70,5 +71,20 @@ class SpringbootApplicationTests {
     public void questionpage(){
         System.out.println("questionService.getPageTotal(\"\", 1, 2) = " + questionService.getPageTotal("", 1, 2));
        // System.out.println(pageData);
+    }
+
+    @Test
+    public void timeZ(){
+        Exam exam = examService.getById(3);
+        String time = exam.getTime();
+        Integer duration = exam.getDuration();
+        String status = exam.getState();
+        long start = DateUtil.parse(time,"yyyy-MM-dd HH:mm").getTime();
+        long now = System.currentTimeMillis();
+        long end = start + duration * 60000;
+        System.out.println("status"+status);
+        System.out.println("start"+start);
+        System.out.println("now"+now);
+        System.out.println("end"+end);
     }
 }

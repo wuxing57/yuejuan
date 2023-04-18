@@ -84,7 +84,7 @@ export default {
        this.$router.push({
          name:'paper',
          query:{
-           studentPaperId: id,
+            studentPaperId: id,
             type: 2
          }
        })

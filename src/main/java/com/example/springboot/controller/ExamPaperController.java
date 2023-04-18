@@ -8,8 +8,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletOutputStream;
 import java.net.URLEncoder;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.springboot.entity.Exam;
+import com.example.springboot.service.IExamService;
+import com.example.springboot.service.IPaperService;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.io.InputStream;
@@ -39,19 +43,26 @@ public class ExamPaperController {
 
     @Resource
     private IExamPaperService examPaperService;
+    @Resource
+    private IPaperService paperService;
+    @Resource
+    private IExamService examService;
 
     private final String now = DateUtil.now();
 
     // 新增或者更新
     @PostMapping
     public Result save(@RequestBody ExamPaper examPaper) {
-        if (examPaper.getId() == null) {
-            //examPaper.setTime(DateUtil.now());
-            //examPaper.setUser(TokenUtils.getCurrentUser().getUsername());
-        }
+        Integer paperId = examPaper.getPaperId();
+        Integer examId = examPaper.getExamId();
         examPaperService.remove(Wrappers.<ExamPaper>lambdaQuery()
                 .eq(ExamPaper::getExamId,examPaper.getExamId()));
         examPaperService.save(examPaper);
+        //设置考试时间
+        Integer duration = paperService.getById(paperId).getDuration();
+        Exam exam = examService.getById(examId);
+        exam.setDuration(duration);
+        examService.updateById(exam);
         return Result.success();
     }
 

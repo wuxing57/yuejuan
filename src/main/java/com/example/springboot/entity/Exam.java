@@ -46,6 +46,7 @@ public class Exam implements Serializable {
 
     @ApiModelProperty("考试对应课程id")
     private Integer courseId;
-
+    @ApiModelProperty("考试时长")
+    private Integer duration;
 
 }

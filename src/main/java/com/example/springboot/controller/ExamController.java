@@ -119,28 +119,27 @@ public class ExamController {
 
     private  void updateStatus(Exam exam) {
         String time = exam.getTime();
-        String getstate = exam.getState();
-        DateTime parse = DateUtil.parse(time, "yyyy-MM-dd HH:mm");
-        //两个小时后的时间
-        Calendar instance = Calendar.getInstance();
-        instance.setTime(parse);
-        instance.add(Calendar.HOUR,2);
-        Date twoHourTime = instance.getTime();
-        String status;
-        if (DateUtil.compare(parse,new Date())>0){
-            status = "未开始";
-        } else if (DateUtil.compare(twoHourTime,new Date())<0) {
-            status = "已结束";
-        }else {
-            status = "进行中";
+        Integer duration = exam.getDuration();
+        if (duration != null){
+            String status = exam.getState();
+            long start = DateUtil.parse(time,"yyyy-MM-dd HH:mm").getTime();
+            long now = System.currentTimeMillis();
+            long end = start + duration * 60000;
+            //计算状态
+            String newSatus = "";
+            if (now < start){
+                newSatus = "未开始";
+            }else if (now > end){
+                newSatus = "已结束";
+            }else {
+                newSatus = "进行中";
+            }
+            //状态不一致更新
+            if (!status.equals(newSatus)){
+                exam.setState(newSatus);
+                examService.updateById(exam);
+            }
         }
-        if (!getstate.equals(status)){
-            examService.update(Wrappers.<Exam>lambdaUpdate()
-                    .eq(Exam::getId,exam.getId())
-                    .set(Exam::getState,status));
-        }
-
-
     }
 
     /**

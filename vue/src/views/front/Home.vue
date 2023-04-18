@@ -15,9 +15,21 @@
                   <span><el-button @click="sign(item.id)" :disabled="notClickSign(item.time)">报名</el-button></span>&nbsp&nbsp
                   <span><el-button @click="attend(item.id)" >参加考试</el-button></span>
               </div>
+
             </el-card>
+
           </div>
-        
+          <div style="padding: 10px 0">
+              <el-pagination
+                      @size-change="handleSizeChange"
+                      @current-change="handleCurrentChange"
+                      :current-page="pageNum"
+                      :page-sizes="[2, 5, 10, 20]"
+                      :page-size="pageSize"
+                      layout="total, sizes, prev, pager, next, jumper"
+                      :total="total">
+              </el-pagination>
+          </div>
       </div>
   </div>
 </template>
